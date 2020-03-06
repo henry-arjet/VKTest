@@ -24,10 +24,10 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="shader1.vert">
+    <None Include="Shaders\shader1.frag">
       <Filter>Shaders</Filter>
     </None>
-    <None Include="shader1.frag">
+    <None Include="Shaders\shader1.vert">
       <Filter>Shaders</Filter>
     </None>
   </ItemGroup>

@@ -23,8 +23,8 @@
     <ClCompile Include="Source.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="shader1.frag" />
-    <None Include="shader1.vert" />
+    <None Include="Shaders\shader1.frag" />
+    <None Include="Shaders\shader1.vert" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{5A4234BA-9B20-4CD4-B9F0-D7BC800EDB93}</ProjectGuid>
@@ -95,7 +95,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(VULKAN_SDK)\Include;$(VULKAN_SDK)\Third-Party\Include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(VULKAN_SDK)\Include;$(VULKAN_SDK)\Third-Party\Include;C:\Users\Henry\source\repos\VKTest\Include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -131,7 +131,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(VULKAN_SDK)\Include;$(VULKAN_SDK)\Third-Party\Include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(VULKAN_SDK)\Include;C:\Users\Henry\source\repos\VKTest\Include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
