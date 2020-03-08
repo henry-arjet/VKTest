@@ -26,6 +26,15 @@
     <None Include="Shaders\shader1.frag" />
     <None Include="Shaders\shader1.vert" />
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Include\arjet\camera.h" />
+    <ClInclude Include="Include\arjet\input.h" />
+    <ClInclude Include="Include\arjet\mesh.h" />
+    <ClInclude Include="Include\arjet\model.h" />
+    <ClInclude Include="Include\arjet\renderer.h" />
+    <ClInclude Include="Include\arjet\shader.h" />
+    <ClInclude Include="Include\arjet\vertex.h" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{5A4234BA-9B20-4CD4-B9F0-D7BC800EDB93}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
@@ -98,7 +107,7 @@
       <AdditionalIncludeDirectories>$(VULKAN_SDK)\Include;$(VULKAN_SDK)\Third-Party\Include;C:\Users\Henry\source\repos\VKTest\Include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
-      <SubSystem>Windows</SubSystem>
+      <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>vulkan-1.lib;SDL2.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(VULKAN_SDK)\Lib32;$(VULKAN_SDK)\Third-Party\Bin32;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
