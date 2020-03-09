@@ -187,32 +187,30 @@ public:
 	}
 
 	void createDescriptorSetLayout() {
-		VkDescriptorSetLayoutBinding uboLayoutBinding = {};
-		uboLayoutBinding.binding = 0;
-		uboLayoutBinding.descriptorCount = 1;
-		uboLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-		uboLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+		vector<VkDescriptorSetLayoutBinding>bindings(1 + texturePaths.size());
+
 		
-		vector<VkDescriptorSetLayoutBinding>bindings;
+		VkDescriptorSetLayoutBinding uboLayoutBinding = {};
+		bindings[0].binding = 0;
+		bindings[0].descriptorCount = 1;
+		bindings[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+		bindings[0].stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+		
 
-		bindings.push_back(uboLayoutBinding);
 
-		vector<VkDescriptorSetLayoutBinding> samplerLayoutBindings(texturePaths.size());
 
-		for (int i = 0; i < texturePaths.size(); i++) {
-			VkDescriptorSetLayoutBinding t;
-			samplerLayoutBindings.push_back(t);
-			samplerLayoutBindings[i].binding = i+1; //things like this +1 will have to end up as ubos.size() //TODO
-			samplerLayoutBindings[i].descriptorCount = 1;
-			samplerLayoutBindings[i].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-			samplerLayoutBindings[i].stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
-			bindings.push_back(samplerLayoutBindings[i]);
+		for (int i = 1; i < texturePaths.size()+1; i++) {
+			bindings[i].binding = i; //things like this +1 will have to end up as ubos.size() //TODO
+			bindings[i].descriptorCount = 1;
+			bindings[i].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+			bindings[i].stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+			bindings[i].pImmutableSamplers = NULL;
 		}
-
 		VkDescriptorSetLayoutCreateInfo layoutInfo = {};
 		layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
 		layoutInfo.bindingCount = static_cast<uint32_t>(bindings.size());
 		layoutInfo.pBindings = bindings.data();
+		//assert(0);
 
 		res = vkCreateDescriptorSetLayout(device, &layoutInfo, NULL, &descriptorSetLayout);
 		assres;
@@ -850,10 +848,7 @@ public:
 			bufferInfo.buffer = uniformBuffers[i];
 			bufferInfo.offset = 0;
 			bufferInfo.range = sizeof(UniformBufferObject);
-
-			
-
-
+					   
 			std::vector<VkWriteDescriptorSet> descriptorWrites(textureImages.size() + 1);
 			descriptorWrites[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 			descriptorWrites[0].dstSet = descriptorSets[i];
@@ -864,13 +859,14 @@ public:
 			descriptorWrites[0].pBufferInfo = &bufferInfo;
 
 			//textures
+			vector<VkDescriptorImageInfo> imageInfo(textureImages.size());//had to make it a vector cause it kept changing the value 
+																		  //after I had already put it in an instance of descriptorWrites
 
-			VkDescriptorImageInfo imageInfo = {};  //loads all textures
 			for (uint j =1; j < textureImages.size()+1; j++) { //really bad, but it should work
-													//Need to look over how descriptors work so I can push all at once
-				imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-				imageInfo.imageView = textureImageViews[j-1];
-				imageInfo.sampler = textureSampler;
+								//Need to look over how descriptors work so I can push all at once
+				imageInfo[j-1].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+				imageInfo[j - 1].imageView = textureImageViews[j-1];
+				imageInfo[j - 1].sampler = textureSampler;
 
 				descriptorWrites[j].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 				descriptorWrites[j].dstSet = descriptorSets[i];
@@ -878,10 +874,9 @@ public:
 				descriptorWrites[j].dstArrayElement = 0;
 				descriptorWrites[j].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
 				descriptorWrites[j].descriptorCount = 1;
-				descriptorWrites[j].pImageInfo = &imageInfo;
-
+				descriptorWrites[j].pImageInfo = &imageInfo[j-1];
 			}
-
+			
 			vkUpdateDescriptorSets(device, static_cast<uint>(descriptorWrites.size()), descriptorWrites.data(), 0, NULL);
 		}
 	}
