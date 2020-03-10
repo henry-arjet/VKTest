@@ -73,14 +73,16 @@ void loop(Renderer &renderer){
 			mainCamera.ProcessKeyboard(RIGHT, deltaTime);
 		}if (input.GetButtonDown("W")) {
 			mainCamera.ProcessKeyboard(FORWARD, deltaTime);
-		}if (input.GetButtonDown("Escape")) {
+		}if (input.OnPress("Escape")) {
 			if (mouseMode) {
 				mouseMode = false;
 				SDL_ShowCursor(1);
 			}
-			else { 
-				mouseMode = true; 
+			else {
+				mouseMode = true;
 				SDL_ShowCursor(0);
+				SDL_WarpMouseInWindow(renderer.window, 50, 50); //for some reason this doesn't work
+
 			}
 		}
 		if (mouseMode) {
@@ -91,7 +93,7 @@ void loop(Renderer &renderer){
 			SDL_WarpMouseInWindow(renderer.window, 50, 50);
 		}
 		renderer.ubo.view = mainCamera.GetViewMatrix();
-
+		
 		renderer.drawFrame();
 	}
 }

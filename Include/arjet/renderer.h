@@ -129,7 +129,8 @@ public:
 	VkImageView depthImageView;
 	UniformBufferObject ubo;
 	vector<std::string> texturePaths;
-
+	ushort swappingFrame = UINT16_MAX; //used in swapDescriptorSets
+	ushort swapIndices[2] = { 0,0 };
 
 
 	Renderer(int width = 1600, int height = 900) {
@@ -187,7 +188,7 @@ public:
 	}
 
 	void createDescriptorSetLayout() {
-		vector<VkDescriptorSetLayoutBinding>bindings(1 + texturePaths.size());
+		std::array<VkDescriptorSetLayoutBinding, 2> bindings = {};
 
 		
 		VkDescriptorSetLayoutBinding uboLayoutBinding = {};
@@ -196,21 +197,17 @@ public:
 		bindings[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
 		bindings[0].stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
 		
-
-
-
-		for (int i = 1; i < texturePaths.size()+1; i++) {
-			bindings[i].binding = i; //things like this +1 will have to end up as ubos.size() //TODO
-			bindings[i].descriptorCount = 1;
-			bindings[i].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-			bindings[i].stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
-			bindings[i].pImmutableSamplers = NULL;
-		}
+		
+		bindings[1].binding = 1;
+		bindings[1].descriptorCount = 1;
+		bindings[1].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+		bindings[1].stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+		bindings[1].pImmutableSamplers = NULL;
+		
 		VkDescriptorSetLayoutCreateInfo layoutInfo = {};
 		layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
 		layoutInfo.bindingCount = static_cast<uint32_t>(bindings.size());
 		layoutInfo.pBindings = bindings.data();
-		//assert(0);
 
 		res = vkCreateDescriptorSetLayout(device, &layoutInfo, NULL, &descriptorSetLayout);
 		assres;
@@ -826,11 +823,13 @@ public:
 		poolInfo.poolSizeCount = static_cast<uint>(poolSizes.size());
 		poolInfo.pPoolSizes = poolSizes.data();
 		poolInfo.maxSets = static_cast<uint>(swapchainImages.size());
+		poolInfo.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
+
 		res = vkCreateDescriptorPool(device, &poolInfo, NULL, &descriptorPool);
 		assres;
 	}
 
-	void createDescriptorSets() {
+	void createDescriptorSets(uint uboIndex, uint texIndex) { //as of now uboIndex is not used
 		size_t s = swapchainImages.size(); //again just tryna save a few cycles
 		vector<VkDescriptorSetLayout> layouts(s, descriptorSetLayout);
 		VkDescriptorSetAllocateInfo allocInfo = {};
@@ -849,7 +848,7 @@ public:
 			bufferInfo.offset = 0;
 			bufferInfo.range = sizeof(UniformBufferObject);
 					   
-			std::vector<VkWriteDescriptorSet> descriptorWrites(textureImages.size() + 1);
+			std::array<VkWriteDescriptorSet, 2> descriptorWrites = {};
 			descriptorWrites[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 			descriptorWrites[0].dstSet = descriptorSets[i];
 			descriptorWrites[0].dstBinding = 0;
@@ -858,28 +857,80 @@ public:
 			descriptorWrites[0].descriptorCount = 1;
 			descriptorWrites[0].pBufferInfo = &bufferInfo;
 
-			//textures
-			vector<VkDescriptorImageInfo> imageInfo(textureImages.size());//had to make it a vector cause it kept changing the value 
-																		  //after I had already put it in an instance of descriptorWrites
+			//texture
+			VkDescriptorImageInfo imageInfo = {}; 
 
-			for (uint j =1; j < textureImages.size()+1; j++) { //really bad, but it should work
-								//Need to look over how descriptors work so I can push all at once
-				imageInfo[j-1].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-				imageInfo[j - 1].imageView = textureImageViews[j-1];
-				imageInfo[j - 1].sampler = textureSampler;
+			imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+			imageInfo.imageView = textureImageViews[texIndex];
+			imageInfo.sampler = textureSampler;
 
-				descriptorWrites[j].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-				descriptorWrites[j].dstSet = descriptorSets[i];
-				descriptorWrites[j].dstBinding = j;
-				descriptorWrites[j].dstArrayElement = 0;
-				descriptorWrites[j].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-				descriptorWrites[j].descriptorCount = 1;
-				descriptorWrites[j].pImageInfo = &imageInfo[j-1];
-			}
+			descriptorWrites[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+			descriptorWrites[1].dstSet = descriptorSets[i];
+			descriptorWrites[1].dstBinding = 1;
+			descriptorWrites[1].dstArrayElement = 0;
+			descriptorWrites[1].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+			descriptorWrites[1].descriptorCount = 1;
+			descriptorWrites[1].pImageInfo = &imageInfo;
 			
 			vkUpdateDescriptorSets(device, static_cast<uint>(descriptorWrites.size()), descriptorWrites.data(), 0, NULL);
 		}
 	}
+	//
+	//void createDescriptorSetsIndividually(uint uboIndex, uint texIndex) { //used to edit descriptor sets while in flight
+	//	//replaces the for loop with current frame
+	//	VkDescriptorSetLayout layout = descriptorSetLayout; //creates copy
+	//	VkDescriptorSetAllocateInfo allocInfo = {};
+	//	allocInfo.descriptorPool = descriptorPool;
+	//	allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+	//	allocInfo.descriptorSetCount = static_cast<uint>(1);
+	//	allocInfo.pSetLayouts = &layout;
+
+	//	res = vkAllocateDescriptorSets(device, &allocInfo, &descriptorSets[currentFrame]);
+	//	assres;
+
+	//	VkDescriptorBufferInfo bufferInfo = {};
+	//	bufferInfo.buffer = uniformBuffers[currentFrame];
+	//	bufferInfo.offset = 0;
+	//	bufferInfo.range = sizeof(UniformBufferObject);
+
+	//	std::array<VkWriteDescriptorSet, 2> descriptorWrites = {};
+	//	descriptorWrites[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+	//	descriptorWrites[0].dstSet = descriptorSets[currentFrame];
+	//	descriptorWrites[0].dstBinding = 0;
+	//	descriptorWrites[0].dstArrayElement = 0;
+	//	descriptorWrites[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+	//	descriptorWrites[0].descriptorCount = 1;
+	//	descriptorWrites[0].pBufferInfo = &bufferInfo;
+
+	//	//texture
+	//	VkDescriptorImageInfo imageInfo = {};
+
+	//	imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+	//	imageInfo.imageView = textureImageViews[texIndex];
+	//	imageInfo.sampler = textureSampler;
+
+	//	descriptorWrites[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+	//	descriptorWrites[1].dstSet = descriptorSets[currentFrame];
+	//	descriptorWrites[1].dstBinding = 1;
+	//	descriptorWrites[1].dstArrayElement = 0;
+	//	descriptorWrites[1].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+	//	descriptorWrites[1].descriptorCount = 1;
+	//	descriptorWrites[1].pImageInfo = &imageInfo;
+
+	//	vkUpdateDescriptorSets(device, static_cast<uint>(descriptorWrites.size()), descriptorWrites.data(), 0, NULL);
+	//}
+
+
+	//void reCreateDescriptorSets() { //called from drawFrame
+	//	vkFreeDescriptorSets(device, descriptorPool, 1, &descriptorSets[currentFrame]); //can only free one at a time because we need to not mess up the frame in flight
+	//	createDescriptorSetsIndividually(swapIndices[0], swapIndices[1]);
+	//}
+
+	//void swapDescriptorSets(uint uboIndex, uint texIndex) {
+	//	swapIndices[0] = uboIndex;
+	//	swapIndices[1] = texIndex;
+	//	swappingFrame = (currentFrame+MAX_FRAMES_IN_FLIGHT - 1)%MAX_FRAMES_IN_FLIGHT; //add MFIF to ensure we don't wrap. SwappinFrame is last frame
+	//}
 
 	void createCommandBuffers() {
 		commandBuffers.resize(swapchainFramebuffers.size());
@@ -1186,7 +1237,7 @@ public:
 		createIndexBuffer();
 		createUniformBuffers();
 		createDescriptorPool();
-		createDescriptorSets();
+		createDescriptorSets(0, 0);
 		createCommandBuffers();
 		createSyncObjects();
 	}
@@ -1231,7 +1282,7 @@ public:
 		createFramebuffers();
 		createUniformBuffers();
 		createDescriptorPool();
-		createDescriptorSets();
+		createDescriptorSets(0, 0);
 		createCommandBuffers();
 	}
 
@@ -1258,6 +1309,7 @@ public:
 
 	void drawFrame() {
 		vkWaitForFences(device, 1, &inFlightFences[currentFrame], VK_TRUE, UINT64_MAX);
+
 		UINT imageIndex;
 		res = vkAcquireNextImageKHR(device, swapchain, UINT64_MAX, imageAvailableSemaphores[currentFrame], NULL, &imageIndex);
 		if (res == VK_ERROR_OUT_OF_DATE_KHR) {

@@ -1,0 +1,7 @@
+Current implementation - recreates descriptor sets every time I want to use a different one
+New implementation - Prefab descriptor sets, swap on draw call
+	- In command buffer
+		-Each mesh should have its own command buffers for drawing
+		-DrawFrame should submit all of these buffers at once - offset
+		-Eash mesh should have a function that submits a command buffer to Renderer, and then a renderer function that pushes the draw call
+Nevermind, don't push new command buffer, push new descriptor set
