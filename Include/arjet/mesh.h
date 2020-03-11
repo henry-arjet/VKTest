@@ -23,7 +23,6 @@ using glm::vec3;
 using glm::vec2;
 
 
-
 struct Texture {
 	unsigned int id;
 	string type;
@@ -34,20 +33,185 @@ class Mesh {
 public:
 	//Data
 	Renderer& renderer;
-	vector<Vertex> vertices;
-	vector<unsigned int> indices;
-	vector<Texture> textures;
-
-
+	vector<Texture> textures; //Not used right now
+	uint index = 0; //This is how it will keep track of where it is in the arrays in renderer
+	uint texIndex = 0;
+	vector<VkDescriptorSet> descriptorSets; //Local. One for each frame
 	VkBuffer vertexBuffer;
+	VkDeviceMemory vertexBufferMemory;
+	VkBuffer indexBuffer;
+	VkDeviceMemory indexBufferMemory;
+	UniformBufferObject ubo;
+	vector<VkBuffer> uniformBuffers;
+	vector<VkDeviceMemory> uniformBuffersMemory;
+
+	//I should have it so that each mesh will load its data and hand it off to the renderer, but not before checking if the renderer already has the data
+
+	
+
+
 	//Functions
-	Mesh(Renderer& renderer, vector<Vertex> vertices, vector<unsigned int> indices, vector<Texture> textures) : renderer(renderer){
+	/*Mesh(Renderer& renderer, vector<Vertex> vertices, vector<unsigned int> indices, vector<Texture> textures) : renderer(renderer){
 		this->vertices = vertices;
 		this->indices = indices;
 		this->textures = textures;
+	}*/
+	Mesh(Renderer& renderer) : renderer(renderer) {}
+
+	//void createVertexBuffer() {}
+
+
+	void createVertexBuffer() {
+		VkDeviceSize bufferSize = sizeof(vertices[0]) * vertices.size();
+		VkBuffer stagingBuffer;
+		VkDeviceMemory stagingBufferMemory;
+		renderer.createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
+
+
+
+		void* data;
+		vkMapMemory(renderer.device, stagingBufferMemory, 0, bufferSize, 0, &data);
+		memcpy(data, vertices.data(), (size_t)bufferSize);
+		vkUnmapMemory(renderer.device, stagingBufferMemory);
+		cout << "Mapped the staging vertex buffer!\n";
+
+
+		renderer.createBuffer(bufferSize, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, vertexBuffer, vertexBufferMemory);
+		renderer.copyBuffer(stagingBuffer, vertexBuffer, bufferSize);
+
+		vkDestroyBuffer(renderer.device, stagingBuffer, NULL);
+		vkFreeMemory(renderer.device, stagingBufferMemory, NULL);
+		cout << "Finished the vertex buffer!\n";
+
 	}
-	void createVertexBuffer() {}
-	void createDescriptorSet() {}//TODO
+
+	void createIndexBuffer() {
+		VkDeviceSize bufferSize = sizeof(indices[0]) * indices.size();
+		VkBuffer stagingBuffer;
+		VkDeviceMemory stagingBufferMemory;
+		renderer.createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
+
+		void* data;
+
+		vkMapMemory(renderer.device, stagingBufferMemory, 0, bufferSize, 0, &data);
+		memcpy(data, indices.data(), (size_t)bufferSize);
+		vkUnmapMemory(renderer.device, stagingBufferMemory);
+		cout << "Mapped the staging index buffer!\n";
+
+		renderer.createBuffer(bufferSize, VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, indexBuffer, indexBufferMemory);
+		renderer.copyBuffer(stagingBuffer, indexBuffer, bufferSize);
+
+		vkDestroyBuffer(renderer.device, stagingBuffer, NULL);
+		vkFreeMemory(renderer.device, stagingBufferMemory, NULL);
+		cout << "Finished the index buffer!\n";
+
+	}
+
+	void createUniformBuffers() {
+		VkDeviceSize bufferSize = sizeof(UniformBufferObject);
+		size_t s = renderer.swapchainImages.size(); //might save a few cycles by not having to look up sci.size() thrice. Might not. IDK.
+		uniformBuffers.resize(s);
+		uniformBuffersMemory.resize(s);
+		for (size_t i = 0; i < s; i++) {
+			renderer.createBuffer(bufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT
+				| VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, uniformBuffers[i], uniformBuffersMemory[i]);
+		}
+	}
+
+	void createDescriptorSets() {
+		size_t s = renderer.swapchainImages.size();//number of frames
+		vector<VkDescriptorSetLayout> layouts(s, renderer.descriptorSetLayout); //Assumes only one layout type
+		VkDescriptorSetAllocateInfo allocInfo = {};
+		allocInfo.descriptorPool = renderer.descriptorPools[index];
+		allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+		allocInfo.descriptorSetCount = static_cast<uint>(s);
+		allocInfo.pSetLayouts = layouts.data();
+
+		descriptorSets.resize(s); //Local. One for each frame
+		VkResult res = vkAllocateDescriptorSets(renderer.device, &allocInfo, descriptorSets.data());
+		assres;
+
+		for (uint i = 0; i < s; i++) {
+			VkDescriptorBufferInfo bufferInfo = {};
+			bufferInfo.buffer = uniformBuffers[i]; 
+			bufferInfo.offset = 0;
+			bufferInfo.range = sizeof(UniformBufferObject);
+
+			std::array<VkWriteDescriptorSet, 2> descriptorWrites = {};
+			descriptorWrites[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+			descriptorWrites[0].dstSet = descriptorSets[i];
+			descriptorWrites[0].dstBinding = 0;
+			descriptorWrites[0].dstArrayElement = 0;
+			descriptorWrites[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+			descriptorWrites[0].descriptorCount = 1; //I could potentially write the descriptors for all objects at once. That can be done later.
+			descriptorWrites[0].pBufferInfo = &bufferInfo;
+
+			//texture
+			VkDescriptorImageInfo imageInfo = {};
+
+			imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+			imageInfo.imageView = renderer.textureImageViews[texIndex]; //Should do it like this so I don't have copies of the same texture. 
+			imageInfo.sampler = renderer.textureSampler; //the default texture sampler we set up in the Renderer class
+
+			descriptorWrites[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+			descriptorWrites[1].dstSet = descriptorSets[i];
+			descriptorWrites[1].dstBinding = 1;
+			descriptorWrites[1].dstArrayElement = 0;
+			descriptorWrites[1].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+			descriptorWrites[1].descriptorCount = 1;
+			descriptorWrites[1].pImageInfo = &imageInfo;
+
+			vkUpdateDescriptorSets(renderer.device, static_cast<uint>(descriptorWrites.size()), descriptorWrites.data(), 0, NULL);
+		}
+	}
+	void updateUniformBuffer(uint currentImage) { //TODO move to mesh
+		static auto startTime = std::chrono::high_resolution_clock::now();
+
+		auto currentTime = std::chrono::high_resolution_clock::now();
+		float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
+
+		ubo.model = glm::rotate(mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+		ubo.proj = glm::perspective(glm::radians(45.0f), renderer.swapchainExtent.width / (float)renderer.swapchainExtent.height, 0.1f, 10.0f);
+		ubo.proj[1][1] *= -1;
+
+
+
+		void* data;
+
+
+		vkMapMemory(renderer.device, uniformBuffersMemory[currentImage], 0, sizeof(ubo), 0, &data);
+		memcpy(data, &ubo, sizeof(ubo));
+		vkUnmapMemory(renderer.device, uniformBuffersMemory[currentImage]);
+
+	}
+	void pushMesh() {
+		if (renderer.descriptorSets.size() <= index) {
+			renderer.descriptorSets.resize(index + 1);
+		}
+		renderer.descriptorSets[index] = descriptorSets;
+		
+
+		renderer.vertexBuffer = vertexBuffer; //TODO update for multiple meshes
+		renderer.indexBuffer = indexBuffer;
+		renderer.uniformBuffers = uniformBuffers;
+
+		if (renderer.indicesSize.size() <= index) {
+			renderer.indicesSize.resize(index + 1);
+		}
+		renderer.indicesSize[0] = 6;
+
+
+	}
+	private:
+		const vector<Vertex> vertices = {
+			{{-0.5f, -0.5f, 0.0f}, {1.0f, 0.0f, 0.0f}, {1.0f, 0.0f}},
+			{{0.5f, -0.5f,  0.0f}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f}},
+			{{0.5f,  0.5f,  0.0f}, {0.0f, 0.0f, 1.0f}, {0.0f, 1.0f}},
+			{{-0.5f, 0.5f,  0.0f}, {1.0f, 1.0f, 1.0f}, {1.0f, 1.0f}}
+		};
+		const vector<ushort> indices = {
+			0,1,2,2,3,0
+		};
 
 	//VkCommandBuffer localBuffer; //command buffer, Should just need one as the per frame commands will be handled by renderer
 

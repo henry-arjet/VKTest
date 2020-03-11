@@ -19,7 +19,6 @@
 
 #define STB_IMAGE_IMPLEMENTATION
 
-//#include <arjet/mesh.h>
 #include <arjet/vertex.h>
 
 #include <stb_image.h>
@@ -52,21 +51,6 @@ struct UniformBufferObject {
 	alignas(16) mat4 proj;
 };
 
-const vector<Vertex> vertices = {
-	{{-0.5f, -0.5f, 0.0f}, {1.0f, 0.0f, 0.0f}, {1.0f, 0.0f}},
-	{{0.5f, -0.5f,  0.0f}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f}},
-	{{0.5f,  0.5f,  0.0f}, {0.0f, 0.0f, 1.0f}, {0.0f, 1.0f}},
-	{{-0.5f, 0.5f,  0.0f}, {1.0f, 1.0f, 1.0f}, {1.0f, 1.0f}},
-
-	{{-0.5f, -0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}, {1.0f, 0.0f}},
-	{{0.5f, -0.5f,  -0.5f}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f}},
-	{{0.5f,  0.5f,  -0.5f}, {0.0f, 0.0f, 1.0f}, {0.0f, 1.0f}},
-	{{-0.5f, 0.5f,  -0.5f}, {1.0f, 1.0f, 1.0f}, {1.0f, 1.0f}}
-};
-const vector<ushort> indices = {
-	0,1,2,2,3,0,
-	4,5,6,6,7,4,
-};
 
 const vector<const char*> validationLayers = { "VK_LAYER_KHRONOS_validation" };
 
@@ -106,14 +90,6 @@ public:
 	vector<VkImage> swapchainImages;
 	VkCommandPool commandPool;
 	uint queueFamilyIndex; //assumes single graphics/present queue family
-	VkBuffer vertexBuffer;
-	VkDeviceMemory vertexBufferMemory;
-	VkBuffer indexBuffer;
-	VkDeviceMemory indexBufferMemory;
-	vector<VkBuffer> uniformBuffers;
-	vector<VkDeviceMemory> uniformBuffersMemory;
-	VkDescriptorPool descriptorPool;
-	vector<VkDescriptorSet> descriptorSets;
 	vector <VkCommandBuffer> commandBuffers;
 	vector<VkSemaphore> imageAvailableSemaphores;
 	vector<VkSemaphore> renderFinishedSemaphores;
@@ -129,8 +105,22 @@ public:
 	VkImageView depthImageView;
 	UniformBufferObject ubo;
 	vector<std::string> texturePaths;
-	ushort swappingFrame = UINT16_MAX; //used in swapDescriptorSets
-	ushort swapIndices[2] = { 0,0 };
+	UINT imageIndex; //this shouldn't have to be a class var, but here we are.
+
+	//Per mesh stuff
+	VkBuffer vertexBuffer;
+	VkBuffer indexBuffer; //TODO make better
+	vector<VkBuffer> uniformBuffers; //TODO update like descriptor 
+	vector<uint> indicesSize; //number of indices for each mesh
+
+	vector<VkDescriptorPool> descriptorPools; //Set of descriptor pools. One pool per mesh. Props could push these to mesh local
+	vector<vector<VkDescriptorSet>> descriptorSets; //2d vector of descriptor sets, first dimension is per mesh, second is per frame
+	uint maxDescriptors = 20;//the maximum number of descriptor SETS the renderer can support. Set before init. Used to initialize the pool
+
+
+
+	//ushort swappingFrame = UINT16_MAX; //used in swapDescriptorSets
+	//ushort swapIndices[2] = { 0,0 }; Might need later
 
 
 	Renderer(int width = 1600, int height = 900) {
@@ -190,7 +180,7 @@ public:
 	void createDescriptorSetLayout() {
 		std::array<VkDescriptorSetLayoutBinding, 2> bindings = {};
 
-		
+		//Sets up a simple, reusable descriptor set for a UBO and a single texture
 		VkDescriptorSetLayoutBinding uboLayoutBinding = {};
 		bindings[0].binding = 0;
 		bindings[0].descriptorCount = 1;
@@ -310,7 +300,7 @@ public:
 		dynamicState.dynamicStateCount = 1;
 		dynamicState.pDynamicStates = dynamicStates;
 
-		VkPipelineLayoutCreateInfo pipelineLayoutInfo = {};
+		VkPipelineLayoutCreateInfo pipelineLayoutInfo = {};//Layout is attached to pipeline here
 		pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
 		pipelineLayoutInfo.setLayoutCount = 1;
 		pipelineLayoutInfo.pSetLayouts = &descriptorSetLayout;
@@ -753,128 +743,29 @@ public:
 
 	}
 
-	void createVertexBuffer() {
-		VkDeviceSize bufferSize = sizeof(vertices[0]) * vertices.size();
-		VkBuffer stagingBuffer;
-		VkDeviceMemory stagingBufferMemory;
-		createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
-
-
-
-		void* data;
-		vkMapMemory(device, stagingBufferMemory, 0, bufferSize, 0, &data);
-		memcpy(data, vertices.data(), (size_t)bufferSize);
-		vkUnmapMemory(device, stagingBufferMemory);
-		cout << "Mapped the staging vertex buffer!\n";
-
-
-		createBuffer(bufferSize, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, vertexBuffer, vertexBufferMemory);
-		copyBuffer(stagingBuffer, vertexBuffer, bufferSize);
-
-		vkDestroyBuffer(device, stagingBuffer, NULL);
-		vkFreeMemory(device, stagingBufferMemory, NULL);
-		cout << "Finished the vertex buffer!\n";
-
-	}
-
-	void createIndexBuffer() {
-		VkDeviceSize bufferSize = sizeof(indices[0]) * indices.size();
-		VkBuffer stagingBuffer;
-		VkDeviceMemory stagingBufferMemory;
-		createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
-
-		void* data;
-
-		vkMapMemory(device, stagingBufferMemory, 0, bufferSize, 0, &data);
-		memcpy(data, indices.data(), (size_t)bufferSize);
-		vkUnmapMemory(device, stagingBufferMemory);
-		cout << "Mapped the staging index buffer!\n";
-
-		createBuffer(bufferSize, VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, indexBuffer, indexBufferMemory);
-		copyBuffer(stagingBuffer, indexBuffer, bufferSize);
-
-		vkDestroyBuffer(device, stagingBuffer, NULL);
-		vkFreeMemory(device, stagingBufferMemory, NULL);
-		cout << "Finished the index buffer!\n";
-
-	}
-
-	void createUniformBuffers() {
-		VkDeviceSize bufferSize = sizeof(UniformBufferObject);
-		size_t s = swapchainImages.size(); //might save a few cycles by not having to look up sci.size() thrice. Might not. IDK.
-		uniformBuffers.resize(s);
-		uniformBuffersMemory.resize(s);
-		for (size_t i = 0; i < s; i++) {
-			createBuffer(bufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT
-				| VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, uniformBuffers[i], uniformBuffersMemory[i]);
-		}
-	}
-
 	void createDescriptorPool() {
-		std::vector<VkDescriptorPoolSize>  poolSizes(1 + texturePaths.size());
-		poolSizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-		poolSizes[0].descriptorCount = static_cast<uint>(swapchainImages.size());
-		for (int i = 1; i < texturePaths.size() + 1; i++) {//TODO again this assumes a single ubo
-			poolSizes[i].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-			poolSizes[i].descriptorCount = static_cast<uint>(swapchainImages.size());
-		}
-		VkDescriptorPoolCreateInfo poolInfo = {};
-		poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-		poolInfo.poolSizeCount = static_cast<uint>(poolSizes.size());
-		poolInfo.pPoolSizes = poolSizes.data();
-		poolInfo.maxSets = static_cast<uint>(swapchainImages.size());
-		poolInfo.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
 
-		res = vkCreateDescriptorPool(device, &poolInfo, NULL, &descriptorPool);
-		assres;
-	}
+		descriptorPools.resize(maxDescriptors);
+		for (int i = 0; i < maxDescriptors; ++i) { //creates a descriptor pool per mesh, as required by maxDescriptors
+			std::vector<VkDescriptorPoolSize>  poolSizes(2); //UBO + texture. I should really automate this
+			poolSizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+			poolSizes[0].descriptorCount = static_cast<uint>(swapchainImages.size());
+			poolSizes[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+			poolSizes[1].descriptorCount = static_cast<uint>(swapchainImages.size());
 
-	void createDescriptorSets(uint uboIndex, uint texIndex) { //as of now uboIndex is not used
-		size_t s = swapchainImages.size(); //again just tryna save a few cycles
-		vector<VkDescriptorSetLayout> layouts(s, descriptorSetLayout);
-		VkDescriptorSetAllocateInfo allocInfo = {};
-		allocInfo.descriptorPool = descriptorPool;
-		allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-		allocInfo.descriptorSetCount = static_cast<uint>(s);
-		allocInfo.pSetLayouts = layouts.data();
+			VkDescriptorPoolCreateInfo poolInfo = {};
+			poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+			poolInfo.poolSizeCount = static_cast<uint>(poolSizes.size());
+			poolInfo.pPoolSizes = poolSizes.data();
+			poolInfo.maxSets = static_cast<uint>(swapchainImages.size());
+			poolInfo.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
 
-		descriptorSets.resize(s);
-		res = vkAllocateDescriptorSets(device, &allocInfo, descriptorSets.data());
-		assres;
-
-		for (uint i = 0; i < s; i++) {
-			VkDescriptorBufferInfo bufferInfo = {};
-			bufferInfo.buffer = uniformBuffers[i];
-			bufferInfo.offset = 0;
-			bufferInfo.range = sizeof(UniformBufferObject);
-					   
-			std::array<VkWriteDescriptorSet, 2> descriptorWrites = {};
-			descriptorWrites[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-			descriptorWrites[0].dstSet = descriptorSets[i];
-			descriptorWrites[0].dstBinding = 0;
-			descriptorWrites[0].dstArrayElement = 0;
-			descriptorWrites[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-			descriptorWrites[0].descriptorCount = 1;
-			descriptorWrites[0].pBufferInfo = &bufferInfo;
-
-			//texture
-			VkDescriptorImageInfo imageInfo = {}; 
-
-			imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-			imageInfo.imageView = textureImageViews[texIndex];
-			imageInfo.sampler = textureSampler;
-
-			descriptorWrites[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-			descriptorWrites[1].dstSet = descriptorSets[i];
-			descriptorWrites[1].dstBinding = 1;
-			descriptorWrites[1].dstArrayElement = 0;
-			descriptorWrites[1].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-			descriptorWrites[1].descriptorCount = 1;
-			descriptorWrites[1].pImageInfo = &imageInfo;
-			
-			vkUpdateDescriptorSets(device, static_cast<uint>(descriptorWrites.size()), descriptorWrites.data(), 0, NULL);
+			res = vkCreateDescriptorPool(device, &poolInfo, NULL, &descriptorPools[i]);
+			assres;
 		}
 	}
+
+	
 	//
 	//void createDescriptorSetsIndividually(uint uboIndex, uint texIndex) { //used to edit descriptor sets while in flight
 	//	//replaces the for loop with current frame
@@ -947,6 +838,7 @@ public:
 		assres;
 
 		for (UINT i = 0; i < commandBuffers.size(); i++) {
+
 			VkCommandBufferBeginInfo beginInfo = {};
 			beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 			res = vkBeginCommandBuffer(commandBuffers[i], &beginInfo);
@@ -966,12 +858,20 @@ public:
 			renderPassInfo.pClearValues = clearValues.data();
 			vkCmdBeginRenderPass(commandBuffers[i], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
 			vkCmdBindPipeline(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline);
-			VkBuffer vertexBuffers[] = { vertexBuffer };
-			VkDeviceSize offsets[] = { 0 };
-			vkCmdBindVertexBuffers(commandBuffers[i], 0, 1, vertexBuffers, offsets);
-			vkCmdBindIndexBuffer(commandBuffers[i], indexBuffer, 0, VK_INDEX_TYPE_UINT16);
-			vkCmdBindDescriptorSets(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &descriptorSets[i], 0, NULL);
-			vkCmdDrawIndexed(commandBuffers[i], static_cast<UINT>(indices.size()), 1, 0, 0, 0);
+			
+
+			cout << descriptorSets.size()  << endl;
+			for (int j = 0; j < descriptorSets.size(); j++) {
+				cout << "TEST" << endl;
+
+				VkDeviceSize offsets[] = { 0 };
+				VkBuffer vertexBufferArray[] = { vertexBuffer};
+				vkCmdBindVertexBuffers(commandBuffers[i], 0, 1, vertexBufferArray, offsets);
+				vkCmdBindIndexBuffer(commandBuffers[i], indexBuffer, 0, VK_INDEX_TYPE_UINT16);//TODO need to make call to mesh's index buffer
+				vkCmdBindDescriptorSets(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &descriptorSets[j][i], 0, NULL);
+				vkCmdDrawIndexed(commandBuffers[i], indicesSize[j], 1, 0, 0, 0);
+				//throw;
+			}
 			vkCmdEndRenderPass(commandBuffers[i]);
 
 			res = vkEndCommandBuffer(commandBuffers[i]);
@@ -1233,12 +1133,13 @@ public:
 			createTextureImageView(i);
 		}
 		createTextureSampler();
-		createVertexBuffer();
-		createIndexBuffer();
-		createUniformBuffers();
+		//createVertexBuffer();
+		//createIndexBuffer();
+		//createUniformBuffers();
 		createDescriptorPool();
-		createDescriptorSets(0, 0);
-		createCommandBuffers();
+	}
+	void finalizeVulkan() {
+		createCommandBuffers(); //I need to have the descriptor sets from the objects ready before I can process these functions
 		createSyncObjects();
 	}
 
@@ -1257,12 +1158,13 @@ public:
 		vkDestroyImage(device, depthImage, NULL);
 		vkFreeMemory(device, depthImageMemory, NULL);
 
-		for (uint i = 0; i < swapchainImages.size(); i++) {
+		/*for (uint i = 0; i < swapchainImages.size(); i++) {
 			vkDestroyBuffer(device, uniformBuffers[i], NULL);
 			vkFreeMemory(device, uniformBuffersMemory[i], NULL);
+		}*/
+		for (uint i = 0; i < descriptorPools.size(); i++) {
+			vkDestroyDescriptorPool(device, descriptorPools[i], NULL);
 		}
-
-		vkDestroyDescriptorPool(device, descriptorPool, NULL);
 	}
 
 	void recreateSwapchain() {
@@ -1280,37 +1182,16 @@ public:
 		createPipeline();
 		createDepthResources();
 		createFramebuffers();
-		createUniformBuffers();
+		//createUniformBuffers();
 		createDescriptorPool();
-		createDescriptorSets(0, 0);
 		createCommandBuffers();
 	}
 
-	void updateUniformBuffer(uint currentImage) {
-		static auto startTime = std::chrono::high_resolution_clock::now();
-
-		auto currentTime = std::chrono::high_resolution_clock::now();
-		float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
-
-		ubo.model = glm::rotate(mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-		ubo.proj = glm::perspective(glm::radians(45.0f), swapchainExtent.width / (float)swapchainExtent.height, 0.1f, 10.0f);
-		ubo.proj[1][1] *= -1;
 
 
-
-		void* data;
-
-
-		vkMapMemory(device, uniformBuffersMemory[currentImage], 0, sizeof(ubo), 0, &data);
-		memcpy(data, &ubo, sizeof(ubo));
-		vkUnmapMemory(device, uniformBuffersMemory[currentImage]);
-
-	}
-
-	void drawFrame() {
+	void startFrame() {//Split into two parts so I can update uniform buffers. Janky as fuck, but it should work
 		vkWaitForFences(device, 1, &inFlightFences[currentFrame], VK_TRUE, UINT64_MAX);
 
-		UINT imageIndex;
 		res = vkAcquireNextImageKHR(device, swapchain, UINT64_MAX, imageAvailableSemaphores[currentFrame], NULL, &imageIndex);
 		if (res == VK_ERROR_OUT_OF_DATE_KHR) {
 			recreateSwapchain();
@@ -1326,8 +1207,9 @@ public:
 		}
 		imagesInFlight[imageIndex] = inFlightFences[currentFrame];
 
-		updateUniformBuffer(imageIndex);
 
+	}
+	void finishFrame(){
 		VkSubmitInfo submitInfo = {};
 		submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 		VkSemaphore waitSemaphores[] = { imageAvailableSemaphores[currentFrame] };
@@ -1369,7 +1251,7 @@ public:
 
 
 
-	void cleanup() {
+	void cleanup() { //TODO Need to add per mesh cleanup
 
 		vkWaitForFences(device, MAX_FRAMES_IN_FLIGHT, inFlightFences.data(), VK_TRUE, UINT64_MAX);
 		cleanupSwapchain();
@@ -1381,9 +1263,9 @@ public:
 		}
 		vkDestroyDescriptorSetLayout(device, descriptorSetLayout, NULL);
 		vkDestroyBuffer(device, vertexBuffer, NULL);
-		vkFreeMemory(device, vertexBufferMemory, NULL);
+		//vkFreeMemory(device, vertexBufferMemory, NULL);
 		vkDestroyBuffer(device, indexBuffer, NULL);
-		vkFreeMemory(device, indexBufferMemory, NULL);
+		//vkFreeMemory(device, indexBufferMemory, NULL);
 		for (UINT i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
 			vkDestroySemaphore(device, renderFinishedSemaphores[i], NULL);
 			vkDestroySemaphore(device, imageAvailableSemaphores[i], NULL);

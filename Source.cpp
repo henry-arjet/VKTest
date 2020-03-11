@@ -4,6 +4,7 @@
 #include <arjet/renderer.h>
 #include <arjet/camera.h>
 #include <arjet/input.h>
+#include <arjet/mesh.h>
 
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_syswm.h>
@@ -28,7 +29,7 @@ double deltaTime = 0; //delta time in seconds
 uint64_t lastTime, now; //helper for deltaTime
 Input input;
 bool mouseMode = true;
-
+vector<Mesh> meshes;
 
 void loop(Renderer &renderer){
 	bool stillRunning = true;
@@ -92,9 +93,11 @@ void loop(Renderer &renderer){
 			mainCamera.ProcessMouseMovement(xoff - 50, -1 * yoff + 50);
 			SDL_WarpMouseInWindow(renderer.window, 50, 50);
 		}
-		renderer.ubo.view = mainCamera.GetViewMatrix();
+		meshes[0].ubo.view = mainCamera.GetViewMatrix();
 		
-		renderer.drawFrame();
+		renderer.startFrame();
+		meshes[0].updateUniformBuffer(renderer.currentFrame);
+		renderer.finishFrame();
 	}
 }
 int main() {
@@ -102,6 +105,14 @@ int main() {
 	renderer.texturePaths.push_back("chalet.jpg");
 	renderer.texturePaths.push_back("sample_texture.jpg");
 	renderer.initVulkan();
+	meshes.push_back(Mesh(renderer));
+	meshes[0].createVertexBuffer();
+	meshes[0].createIndexBuffer();
+	meshes[0].createUniformBuffers();
+	meshes[0].createDescriptorSets();
+	meshes[0].pushMesh();
+	renderer.finalizeVulkan();
+
 	mainCamera = Camera();
 	SDL_ShowCursor(0);
 	loop(renderer);

@@ -5,3 +5,7 @@ New implementation - Prefab descriptor sets, swap on draw call
 		-DrawFrame should submit all of these buffers at once - offset
 		-Eash mesh should have a function that submits a command buffer to Renderer, and then a renderer function that pushes the draw call
 Nevermind, don't push new command buffer, push new descriptor set
+
+Planning 2.0
+	-Each mesh has it's own descriptor pool
+	-descriptor sets and vertex buffers are pushed to renderer at init
