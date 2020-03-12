@@ -96,9 +96,14 @@ void loop(Renderer &renderer){
 			SDL_WarpMouseInWindow(renderer.window, 50, 50);
 		}
 		meshes[0].ubo.view = mainCamera.GetViewMatrix();
-		meshes[0].position = vec3(0, glm::sin(now), 0);
+		meshes[0].position = vec3(0, -1*glm::sin(now), -2.0f);
+		meshes[1].ubo.view = mainCamera.GetViewMatrix();
+		meshes[1].position = vec3(glm::cos(now), glm::sin(now), 0);
+
 		renderer.startFrame();
 		meshes[0].updateUniformBuffer(renderer.currentFrame);
+		meshes[1].updateUniformBuffer(renderer.currentFrame);
+
 		renderer.finishFrame();
 	}
 }
@@ -108,11 +113,12 @@ int main() {
 	renderer.texturePaths.push_back("sample_texture.jpg");
 	renderer.initVulkan();
 	meshes.push_back(Mesh(renderer));
-	meshes[0].createVertexBuffer();
-	meshes[0].createIndexBuffer();
-	meshes[0].createUniformBuffers();
-	meshes[0].createDescriptorSets();
-	meshes[0].pushMesh();
+	meshes[0].init();
+	meshes.push_back(Mesh(renderer));
+	meshes[1].index = 1;
+	meshes[1].texIndex = 1;
+
+	meshes[1].init();
 	renderer.finalizeVulkan();
 
 	mainCamera = Camera();

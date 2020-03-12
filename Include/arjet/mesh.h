@@ -1,9 +1,7 @@
 #ifndef MESH_H
 #define MESH_H
-//adapted from learnopengl, mostly my own
-//Differs from original in that instead of setting up the draw calls and then making the draw call,
-//it sends a command buffer to the renderer and then the renderer executes all command buffers
-//This doesn't allow for occulsion, but we'll cross that bridge when we come to it.
+//adapted partly from vulken-tutorial, mostly my own
+
 
 #include <vulkan/vulkan.hpp>
 #include <glm/glm.hpp>
@@ -47,9 +45,7 @@ public:
 	vec3 position; //Should be in object, but yolo
 
 	//I should have it so that each mesh will load its data and hand it off to the renderer, but not before checking if the renderer already has the data
-
-	
-
+	//Or should I do that per model?
 
 	//Functions
 	/*Mesh(Renderer& renderer, vector<Vertex> vertices, vector<unsigned int> indices, vector<Texture> textures) : renderer(renderer){
@@ -60,7 +56,13 @@ public:
 	Mesh(Renderer& renderer) : renderer(renderer) {}
 
 	//void createVertexBuffer() {}
-
+	void init() {
+		createVertexBuffer();
+		createIndexBuffer();
+		createUniformBuffers();
+		createDescriptorSets();
+		pushMesh();
+	}
 
 	void createVertexBuffer() {
 		VkDeviceSize bufferSize = sizeof(vertices[0]) * vertices.size();
@@ -74,7 +76,6 @@ public:
 		vkMapMemory(renderer.device, stagingBufferMemory, 0, bufferSize, 0, &data);
 		memcpy(data, vertices.data(), (size_t)bufferSize);
 		vkUnmapMemory(renderer.device, stagingBufferMemory);
-		cout << "Mapped the staging vertex buffer!\n";
 
 
 		renderer.createBuffer(bufferSize, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, vertexBuffer, vertexBufferMemory);
@@ -82,7 +83,6 @@ public:
 
 		vkDestroyBuffer(renderer.device, stagingBuffer, NULL);
 		vkFreeMemory(renderer.device, stagingBufferMemory, NULL);
-		cout << "Finished the vertex buffer!\n";
 
 	}
 
@@ -97,14 +97,12 @@ public:
 		vkMapMemory(renderer.device, stagingBufferMemory, 0, bufferSize, 0, &data);
 		memcpy(data, indices.data(), (size_t)bufferSize);
 		vkUnmapMemory(renderer.device, stagingBufferMemory);
-		cout << "Mapped the staging index buffer!\n";
 
 		renderer.createBuffer(bufferSize, VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, indexBuffer, indexBufferMemory);
 		renderer.copyBuffer(stagingBuffer, indexBuffer, bufferSize);
 
 		vkDestroyBuffer(renderer.device, stagingBuffer, NULL);
 		vkFreeMemory(renderer.device, stagingBufferMemory, NULL);
-		cout << "Finished the index buffer!\n";
 
 	}
 
@@ -192,15 +190,20 @@ public:
 		}
 		renderer.descriptorSets[index] = descriptorSets;
 		
-
-		renderer.vertexBuffer = vertexBuffer; //TODO update for multiple meshes
-		renderer.indexBuffer = indexBuffer;
-		renderer.uniformBuffers = uniformBuffers;
+		if (renderer.vertexBuffers.size() <= index) {
+			renderer.vertexBuffers.resize(index + 1);
+		}
+		renderer.vertexBuffers[index] = vertexBuffer; //TODO update for multiple meshes
+		
+		if (renderer.indexBuffers.size() <= index) {
+			renderer.indexBuffers.resize(index + 1);
+		}
+		renderer.indexBuffers[index] = indexBuffer;
 
 		if (renderer.indicesSize.size() <= index) {
 			renderer.indicesSize.resize(index + 1);
 		}
-		renderer.indicesSize[0] = 6;
+		renderer.indicesSize[index] = 6;
 
 
 	}

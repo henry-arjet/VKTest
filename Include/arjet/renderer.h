@@ -107,9 +107,8 @@ public:
 	UINT imageIndex; //this shouldn't have to be a class var, but here we are.
 
 	//Per mesh stuff
-	VkBuffer vertexBuffer;
-	VkBuffer indexBuffer; //TODO make better
-	vector<VkBuffer> uniformBuffers; //TODO update like descriptor 
+	vector<VkBuffer> vertexBuffers;
+	vector<VkBuffer> indexBuffers;
 	vector<uint> indicesSize; //number of indices for each mesh
 
 	vector<VkDescriptorPool> descriptorPools; //Set of descriptor pools. One pool per mesh. Props could push these to mesh local
@@ -762,6 +761,7 @@ public:
 			res = vkCreateDescriptorPool(device, &poolInfo, NULL, &descriptorPools[i]);
 			assres;
 		}
+		
 	}
 
 	
@@ -859,17 +859,15 @@ public:
 			vkCmdBindPipeline(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline);
 			
 
-			cout << descriptorSets.size()  << endl;
-			for (int j = 0; j < descriptorSets.size(); j++) {
-				cout << "TEST" << endl;
+			for (int j = 0; j < descriptorSets.size(); j++) { //Now to draw the actual meshes
+				
 
 				VkDeviceSize offsets[] = { 0 };
-				VkBuffer vertexBufferArray[] = { vertexBuffer};
+				VkBuffer vertexBufferArray[] = { vertexBuffers[j]};
 				vkCmdBindVertexBuffers(commandBuffers[i], 0, 1, vertexBufferArray, offsets);
-				vkCmdBindIndexBuffer(commandBuffers[i], indexBuffer, 0, VK_INDEX_TYPE_UINT16);//TODO need to make call to mesh's index buffer
+				vkCmdBindIndexBuffer(commandBuffers[i], indexBuffers[j], 0, VK_INDEX_TYPE_UINT16);
 				vkCmdBindDescriptorSets(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &descriptorSets[j][i], 0, NULL);
 				vkCmdDrawIndexed(commandBuffers[i], indicesSize[j], 1, 0, 0, 0);
-				//throw;
 			}
 			vkCmdEndRenderPass(commandBuffers[i]);
 
@@ -1261,9 +1259,9 @@ public:
 			vkFreeMemory(device, textureImageMemory[i], NULL);
 		}
 		vkDestroyDescriptorSetLayout(device, descriptorSetLayout, NULL);
-		vkDestroyBuffer(device, vertexBuffer, NULL);
+		//vkDestroyBuffer(device, vertexBuffer, NULL);
 		//vkFreeMemory(device, vertexBufferMemory, NULL);
-		vkDestroyBuffer(device, indexBuffer, NULL);
+		//vkDestroyBuffer(device, indexBuffer, NULL);
 		//vkFreeMemory(device, indexBufferMemory, NULL);
 		for (UINT i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
 			vkDestroySemaphore(device, renderFinishedSemaphores[i], NULL);
