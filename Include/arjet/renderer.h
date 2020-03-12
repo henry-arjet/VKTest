@@ -103,7 +103,6 @@ public:
 	VkImage depthImage;
 	VkDeviceMemory depthImageMemory;
 	VkImageView depthImageView;
-	UniformBufferObject ubo;
 	vector<std::string> texturePaths;
 	UINT imageIndex; //this shouldn't have to be a class var, but here we are.
 

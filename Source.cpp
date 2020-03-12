@@ -25,8 +25,8 @@ using glm::vec2;
 
 Camera mainCamera;
 
-double deltaTime = 0; //delta time in seconds
-uint64_t lastTime, now; //helper for deltaTime
+double deltaTime, now = 0; //delta times and current time passed in second
+uint64_t lastTime, thisTime, startTime; //helper for time keeping
 Input input;
 bool mouseMode = true;
 vector<Mesh> meshes;
@@ -35,9 +35,11 @@ void loop(Renderer &renderer){
 	bool stillRunning = true;
 	while (stillRunning) {
 		//first calculate delta time
-		lastTime = now;
-		now = SDL_GetPerformanceCounter();
-		deltaTime = (double)((now - lastTime) / (double)SDL_GetPerformanceFrequency());
+		lastTime = thisTime;
+		thisTime = SDL_GetPerformanceCounter();
+		deltaTime = (double)((thisTime - lastTime) / (double)SDL_GetPerformanceFrequency());
+		now = (double)((thisTime - startTime) / (double)SDL_GetPerformanceFrequency());
+
 		SDL_Event event;
 		while (SDL_PollEvent(&event)) {
 			//SDL Events
@@ -94,7 +96,7 @@ void loop(Renderer &renderer){
 			SDL_WarpMouseInWindow(renderer.window, 50, 50);
 		}
 		meshes[0].ubo.view = mainCamera.GetViewMatrix();
-		
+		meshes[0].position = vec3(0, glm::sin(now), 0);
 		renderer.startFrame();
 		meshes[0].updateUniformBuffer(renderer.currentFrame);
 		renderer.finishFrame();
@@ -114,6 +116,7 @@ int main() {
 	renderer.finalizeVulkan();
 
 	mainCamera = Camera();
+	startTime = SDL_GetPerformanceCounter();
 	SDL_ShowCursor(0);
 	loop(renderer);
 	renderer.cleanup();

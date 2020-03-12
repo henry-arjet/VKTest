@@ -44,6 +44,7 @@ public:
 	UniformBufferObject ubo;
 	vector<VkBuffer> uniformBuffers;
 	vector<VkDeviceMemory> uniformBuffersMemory;
+	vec3 position; //Should be in object, but yolo
 
 	//I should have it so that each mesh will load its data and hand it off to the renderer, but not before checking if the renderer already has the data
 
@@ -167,11 +168,12 @@ public:
 	void updateUniformBuffer(uint currentImage) { //TODO move to mesh
 		static auto startTime = std::chrono::high_resolution_clock::now();
 
-		auto currentTime = std::chrono::high_resolution_clock::now();
-		float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
-
-		ubo.model = glm::rotate(mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-		ubo.proj = glm::perspective(glm::radians(45.0f), renderer.swapchainExtent.width / (float)renderer.swapchainExtent.height, 0.1f, 10.0f);
+		//auto currentTime = std::chrono::high_resolution_clock::now();
+		//float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
+		ubo.model = glm::translate(mat4(1.0f), position);
+		//ubo.model = glm::rotate(mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));//Translate then rotate
+		
+		ubo.proj = glm::perspective(glm::radians(45.0f), renderer.swapchainExtent.width / (float)renderer.swapchainExtent.height, 0.1f, 10.0f); //TODO move to init function
 		ubo.proj[1][1] *= -1;
 
 
