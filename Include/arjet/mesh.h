@@ -22,7 +22,7 @@ using glm::vec2;
 
 
 struct Texture {
-	unsigned int id;
+	unsigned int index;
 	string type;
 	string path;
 };
@@ -47,21 +47,29 @@ public:
 	//I should have it so that each mesh will load its data and hand it off to the renderer, but not before checking if the renderer already has the data
 	//Or should I do that per model?
 
-	//Functions
-	/*Mesh(Renderer& renderer, vector<Vertex> vertices, vector<unsigned int> indices, vector<Texture> textures) : renderer(renderer){
+
+	Mesh(Renderer& r, vector<Vertex> vertices, vector<unsigned int> indices, vector<Texture> textures, uint index) : renderer(r){ //TODO norm map index or overhaul implementation
 		this->vertices = vertices;
 		this->indices = indices;
 		this->textures = textures;
-	}*/
-	Mesh(Renderer& renderer) : renderer(renderer) {}
+		this->index = index;
+	}
+	//Mesh(Renderer& renderer) : renderer(renderer) {}
 
 	//void createVertexBuffer() {}
 	void init() {
+		cout << "init mesh " << index << endl;
 		createVertexBuffer();
+		cout << "created vertex buffer" << endl;
 		createIndexBuffer();
+		cout << "created index buffer" << endl;
 		createUniformBuffers();
+		cout << "created uniform buffers" << endl;
 		createDescriptorSets();
+		cout << "created descriptor sets" << endl;
+
 		pushMesh();
+
 	}
 
 	void createVertexBuffer() {
@@ -111,6 +119,8 @@ public:
 		size_t s = renderer.swapchainImages.size(); //might save a few cycles by not having to look up sci.size() thrice. Might not. IDK.
 		uniformBuffers.resize(s);
 		uniformBuffersMemory.resize(s);
+		cout << "Uniform buffers memory resized to " << s << endl;
+
 		for (size_t i = 0; i < s; i++) {
 			renderer.createBuffer(bufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT
 				| VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, uniformBuffers[i], uniformBuffersMemory[i]);
@@ -163,7 +173,7 @@ public:
 			vkUpdateDescriptorSets(renderer.device, static_cast<uint>(descriptorWrites.size()), descriptorWrites.data(), 0, NULL);
 		}
 	}
-	void updateUniformBuffer(uint currentImage) { //TODO move to mesh
+	void updateUniformBuffer(uint currentImage) {
 		static auto startTime = std::chrono::high_resolution_clock::now();
 
 		//auto currentTime = std::chrono::high_resolution_clock::now();
@@ -173,7 +183,6 @@ public:
 		
 		ubo.proj = glm::perspective(glm::radians(45.0f), renderer.swapchainExtent.width / (float)renderer.swapchainExtent.height, 0.1f, 10.0f); //TODO move to init function
 		ubo.proj[1][1] *= -1;
-
 
 
 		void* data;
@@ -193,7 +202,7 @@ public:
 		if (renderer.vertexBuffers.size() <= index) {
 			renderer.vertexBuffers.resize(index + 1);
 		}
-		renderer.vertexBuffers[index] = vertexBuffer; //TODO update for multiple meshes
+		renderer.vertexBuffers[index] = vertexBuffer;
 		
 		if (renderer.indexBuffers.size() <= index) {
 			renderer.indexBuffers.resize(index + 1);
@@ -203,20 +212,12 @@ public:
 		if (renderer.indicesSize.size() <= index) {
 			renderer.indicesSize.resize(index + 1);
 		}
-		renderer.indicesSize[index] = 6;
-
+		renderer.indicesSize[index] = indices.size();
 
 	}
-	private:
-		const vector<Vertex> vertices = {
-			{{-0.5f, -0.5f, 0.0f}, {1.0f, 0.0f, 0.0f}, {1.0f, 0.0f}},
-			{{0.5f, -0.5f,  0.0f}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f}},
-			{{0.5f,  0.5f,  0.0f}, {0.0f, 0.0f, 1.0f}, {0.0f, 1.0f}},
-			{{-0.5f, 0.5f,  0.0f}, {1.0f, 1.0f, 1.0f}, {1.0f, 1.0f}}
-		};
-		const vector<ushort> indices = {
-			0,1,2,2,3,0
-		};
+	
+		vector<Vertex> vertices;
+		vector<uint> indices;
 
 	//VkCommandBuffer localBuffer; //command buffer, Should just need one as the per frame commands will be handled by renderer
 

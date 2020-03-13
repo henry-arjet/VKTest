@@ -17,7 +17,6 @@
 #define uint uint32_t
 #define scuint static_cast<uint32_t>
 
-#define STB_IMAGE_IMPLEMENTATION
 
 #include <arjet/vertex.h>
 
@@ -96,20 +95,19 @@ public:
 	vector<VkFence> inFlightFences;
 	vector<VkFence> imagesInFlight;
 	VkQueue graphicsQueue;
-	vector<VkImage> textureImages;
-	vector<VkDeviceMemory> textureImageMemory;
 	vector<VkImageView> textureImageViews;
 	VkSampler textureSampler;
 	VkImage depthImage;
 	VkDeviceMemory depthImageMemory;
 	VkImageView depthImageView;
-	vector<std::string> texturePaths;
 	UINT imageIndex; //this shouldn't have to be a class var, but here we are.
 
 	//Per mesh stuff
 	vector<VkBuffer> vertexBuffers;
 	vector<VkBuffer> indexBuffers;
 	vector<uint> indicesSize; //number of indices for each mesh
+	vector<VkImage> textureImages;
+	vector<VkDeviceMemory> textureImageMemory;
 
 	vector<VkDescriptorPool> descriptorPools; //Set of descriptor pools. One pool per mesh. Props could push these to mesh local
 	vector<vector<VkDescriptorSet>> descriptorSets; //2d vector of descriptor sets, first dimension is per mesh, second is per frame
@@ -204,7 +202,6 @@ public:
 	void createPipeline() {
 		auto vertShaderCode = readFile("Shaders/vert.spv");
 		auto fragShaderCode = readFile("Shaders/frag.spv");
-
 		VkShaderModule vertShaderModule = createShaderModule(vertShaderCode);
 		VkShaderModule fragShaderModule = createShaderModule(fragShaderCode);
 
@@ -309,7 +306,7 @@ public:
 
 		VkPipelineDepthStencilStateCreateInfo depthStencil = {};
 		depthStencil.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
-		depthStencil.depthTestEnable = 1;
+		depthStencil.depthTestEnable = 0;
 		depthStencil.depthWriteEnable = 1;
 		depthStencil.depthCompareOp = VK_COMPARE_OP_LESS;
 		depthStencil.depthBoundsTestEnable = 0;
@@ -624,11 +621,14 @@ public:
 		endSingleTimeCommands(commandBuffer);
 	}
 
-	void createTextureImage(int index) {
-
+	void createTextureImage(int index, cstr path) {
+		if (textureImages.size() <= index) {
+			textureImages.resize(index + 1);
+			textureImageMemory.resize(index + 1);
+		}
 		int texWidth, texHeight, texChannels;
 
-		stbi_uc* pixels = stbi_load(texturePaths[index].c_str(), &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
+		stbi_uc* pixels = stbi_load(path, &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
 		VkDeviceSize imageSize = texWidth * texHeight * 4;
 		assert(pixels);
 
@@ -641,7 +641,6 @@ public:
 		vkMapMemory(device, stagingBufferMemory, 0, imageSize, 0, &data);
 		memcpy(data, pixels, static_cast<size_t>(imageSize));
 		vkUnmapMemory(device, stagingBufferMemory);
-		cout << "Mapped the texture staging buffer!\n";
 
 		stbi_image_free(pixels);
 
@@ -678,6 +677,9 @@ public:
 	}
 
 	void createTextureImageView(int index) {
+		if (textureImageViews.size() <= index) {
+			textureImageViews.resize(index + 1);
+		}
 		textureImageViews[index] = createImageView(textureImages[index], VK_FORMAT_R8G8B8A8_SRGB);
 	}
 
@@ -860,13 +862,13 @@ public:
 			
 
 			for (int j = 0; j < descriptorSets.size(); j++) { //Now to draw the actual meshes
-				
-
+				cout << "creating command buffer" << endl;
 				VkDeviceSize offsets[] = { 0 };
 				VkBuffer vertexBufferArray[] = { vertexBuffers[j]};
 				vkCmdBindVertexBuffers(commandBuffers[i], 0, 1, vertexBufferArray, offsets);
-				vkCmdBindIndexBuffer(commandBuffers[i], indexBuffers[j], 0, VK_INDEX_TYPE_UINT16);
+				vkCmdBindIndexBuffer(commandBuffers[i], indexBuffers[j], 0, VK_INDEX_TYPE_UINT32);
 				vkCmdBindDescriptorSets(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &descriptorSets[j][i], 0, NULL);
+				//vkCmdDraw(commandBuffers[i], 3, 1, 0, 0);
 				vkCmdDrawIndexed(commandBuffers[i], indicesSize[j], 1, 0, 0, 0);
 			}
 			vkCmdEndRenderPass(commandBuffers[i]);
@@ -1120,20 +1122,10 @@ public:
 		createPipeline();
 		createCommandPool();
 		createDepthResources();
-		createFramebuffers(); //textures are handled differently so I can have multiple of them
-		int texturePathsSize = texturePaths.size();
-		textureImages.resize(texturePathsSize);
-		textureImageMemory.resize(texturePathsSize);
-		textureImageViews.resize(texturePathsSize);
-		for (int i = 0; i < texturePathsSize; i++) {
-			createTextureImage(i);
-			createTextureImageView(i);
-		}
+		createFramebuffers();
 		createTextureSampler();
-		//createVertexBuffer();
-		//createIndexBuffer();
-		//createUniformBuffers();
 		createDescriptorPool();
+		cout << "init finished" << endl;
 	}
 	void finalizeVulkan() {
 		createCommandBuffers(); //I need to have the descriptor sets from the objects ready before I can process these functions
@@ -1186,7 +1178,7 @@ public:
 
 
 
-	void startFrame() {//Split into two parts so I can update uniform buffers. Janky as fuck, but it should work
+	void startFrame() {//Split into two parts so I can update uniform buffers. Janky as fuck, but it should work. This specific part waits and then sets up the frame
 		vkWaitForFences(device, 1, &inFlightFences[currentFrame], VK_TRUE, UINT64_MAX);
 
 		res = vkAcquireNextImageKHR(device, swapchain, UINT64_MAX, imageAvailableSemaphores[currentFrame], NULL, &imageIndex);
@@ -1198,13 +1190,10 @@ public:
 			throw std::runtime_error("failed to acquire swap chain image");
 		}
 
-
 		if (imagesInFlight[imageIndex] != NULL) {
 			vkWaitForFences(device, 1, &imagesInFlight[imageIndex], VK_TRUE, UINT64_MAX);
 		}
 		imagesInFlight[imageIndex] = inFlightFences[currentFrame];
-
-
 	}
 	void finishFrame(){
 		VkSubmitInfo submitInfo = {};

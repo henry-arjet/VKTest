@@ -15,8 +15,9 @@
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 
-#include <learnopengl/shader.h>
-#include <learnopengl/mesh.h>
+
+#include <arjet/mesh.h>
+#include <arjet/renderer.h>
 
 #include <string>
 #include <fstream>
@@ -27,27 +28,25 @@
 
 using std::vector;
 
-
-unsigned int TextureFromFile(const char *path, const string &directory, bool gamma = false);
-
 class Model {
+
 public:
+	vector<Mesh> meshes;
+
 	//functions
-	Model(string const &path) {
+	Model(string const &path, Renderer& r, uint &mCount, uint &tCount) : renderer(r), meshCount(mCount), texCount(tCount) {
 		loadModel(path);
-	}
-	void Draw(Shader shader) {
-
-		for (unsigned int i = 0; i < meshes.size(); i++) {
-			meshes[i].Draw(shader);
-		}
-
 	}
 private:
 	//model data
-	vector<Mesh> meshes;
 	string directory;
 	vector<Texture> textures_loaded;
+	Renderer &renderer;
+	uint &meshCount; //keeps track of which mesh index goes with which mesh;
+	uint &texCount; //same for texture index
+
+
+
 	//functions
 	void loadModel(string const &path) {
 		Assimp::Importer importer;
@@ -85,31 +84,36 @@ private:
 			vector.x = mesh->mVertices[i].x;
 			vector.y = mesh->mVertices[i].y;
 			vector.z = mesh->mVertices[i].z;
-			vertex.Position = vector;
-
-			vector.x = mesh->mNormals[i].x;
-			vector.y = mesh->mNormals[i].y;
-			vector.z = mesh->mNormals[i].z;
-			vertex.Normal = vector;
+			vertex.pos = vector;
+			if (mesh->HasNormals()) {
+				vector.x = mesh->mNormals[i].x;
+				vector.y = mesh->mNormals[i].y;
+				vector.z = mesh->mNormals[i].z;
+				vertex.norm = vector;
+			}
+			else vertex.norm = glm::vec3(0.0f, 0.0f, 0.0f);
 
 			if (mesh->mTextureCoords[0]) { // does it have any?
 				glm::vec2 vec;
 				vec.x = mesh->mTextureCoords[0][i].x;
 				vec.y = mesh->mTextureCoords[0][i].y;
-				vertex.TexCoords = vec;
+				vertex.texCoord = vec;
 			}
-			else vertex.TexCoords = glm::vec2(0.0f, 0.0f);
+			else vertex.texCoord = glm::vec2(0.0f, 0.0f);
 
-			vector.x = mesh->mTangents[i].x;
-			vector.y = mesh->mTangents[i].y;
-			vector.z = mesh->mTangents[i].z;
-			vertex.Tangent = vector;
+			if (mesh->HasTangentsAndBitangents()) {
+				vector.x = mesh->mTangents[i].x;
+				vector.y = mesh->mTangents[i].y;
+				vector.z = mesh->mTangents[i].z;
+				vertex.tan = vector;
 
-			vector.x = mesh->mBitangents[i].x;
-			vector.y = mesh->mBitangents[i].y;
-			vector.z = mesh->mBitangents[i].z;
-			vertex.Bitangent = vector;
-			vertices.push_back(vertex);
+				vector.x = mesh->mBitangents[i].x;
+				vector.y = mesh->mBitangents[i].y;
+				vector.z = mesh->mBitangents[i].z;
+				vertex.bit = vector;
+			}
+			else { vertex.tan = glm::vec3(0.0f, 0.0f, 0.0f); vertex.bit = glm::vec3(0.0f, 0.0f, 0.0f); }
+			vertices.push_back(vertex);//I don't think pushback is very fast, but it should work
 		}
 
 		//process indices
@@ -123,8 +127,8 @@ private:
 		if (mesh->mMaterialIndex >= 0) { //again does it have any
 
 			aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
-			cout << material->GetTextureCount(aiTextureType_UNKNOWN) << endl;
-			cout << material->GetTextureCount(aiTextureType_DIFFUSE) << " " << material->GetTextureCount(aiTextureType_SPECULAR) << " " << material->GetTextureCount(aiTextureType_HEIGHT) << " " << endl;
+			//cout << material->GetTextureCount(aiTextureType_UNKNOWN) << endl;
+			//cout << material->GetTextureCount(aiTextureType_DIFFUSE) << " " << material->GetTextureCount(aiTextureType_SPECULAR) << " " << material->GetTextureCount(aiTextureType_HEIGHT) << " " << endl;
 			vector<Texture> diffuseMaps = loadMaterialTextures(material, aiTextureType_DIFFUSE, "texture_diffuse");
 			vector<Texture> specularMaps = loadMaterialTextures(material, aiTextureType_SPECULAR, "texture_specular");
 			vector<Texture> normalMaps = loadMaterialTextures(material, aiTextureType_HEIGHT, "texture_normal");
@@ -133,9 +137,10 @@ private:
 			textures.insert(textures.end(), specularMaps.begin(), specularMaps.end());
 			textures.insert(textures.end(), normalMaps.begin(), normalMaps.end());
 
-
+			
 		}
-		return Mesh(vertices, indices, textures);
+		return Mesh(renderer, vertices, indices, textures, meshCount++);//add mesh index and texture index.
+
 	}
 	vector<Texture> loadMaterialTextures(aiMaterial *mat, aiTextureType type, string typeName){
 		vector<Texture> textures;
@@ -153,59 +158,42 @@ private:
 
 			if (!skip) {
 				Texture texture;
-				texture.id = TextureFromFile(str.C_Str(), this->directory);
+				uint workingTexIndex = texCount++;
+				TextureFromFile(workingTexIndex, str.C_Str(), this->directory);
+
+				texture.index = workingTexIndex; 
 				texture.type = typeName;
 				texture.path = str.C_Str();
 				textures.push_back(texture);
 				textures_loaded.push_back(texture);
 			}
 		}
+		//THIS IS A HACK AS CHALET DOESN'T HAVE AN EXPLICIT TEXTURE THAT ASSIMP RECOGNIZES
+		Texture texture;
+		uint workingTexIndex = texCount++;
+		TextureFromFile(workingTexIndex, "chalet.jpg", this->directory);
+
+		texture.index = workingTexIndex;
+		texture.type = typeName;
+		texture.path = "chalet.jpg";
+		textures.push_back(texture);
+
 		return textures;
+	}
+	void TextureFromFile(uint index, const char *path, const string &directory, bool gamma = false) //Bro IDEK what gamma was supposed to do
+	{
+		string filename = string(path);
+		filename = filename.substr(filename.find_last_of('\\') + 1, filename.size());
+
+		filename = directory + "/textures/" + filename;
+
+		renderer.createTextureImage(index, filename.c_str());
+		cout << "loaded " << filename << endl;
+		renderer.createTextureImageView(index);
 	}
 };
 
-unsigned int TextureFromFile(const char *path, const string &directory, bool gamma)
-{
-	string filename = string(path);
-	filename = filename.substr(filename.find_last_of('\\') + 1, filename.size());
 
-	filename = directory + "/textures/" + filename;
-
-	cout << "loaded " << filename << endl;
-	unsigned int textureID;
-	glGenTextures(1, &textureID);
-
-	int width, height, nrComponents;
-	unsigned char *data = stbi_load(filename.c_str(), &width, &height, &nrComponents, 0);
-	if (data)
-	{
-		GLenum format;
-		if (nrComponents == 1)
-			format = GL_RED;
-		else if (nrComponents == 3)
-			format = GL_RGB;
-		else if (nrComponents == 4)
-			format = GL_RGBA;
-
-		glBindTexture(GL_TEXTURE_2D, textureID);
-		glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
-		glGenerateMipmap(GL_TEXTURE_2D);
-
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-		stbi_image_free(data);
-	}
-	else
-	{
-		std::cout << "Texture failed to load at path: " << path << std::endl;
-		stbi_image_free(data);
-	}
-
-	return textureID;
-}
 
 
 
