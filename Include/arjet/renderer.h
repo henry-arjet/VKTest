@@ -260,7 +260,7 @@ public:
 		rasterizer.rasterizerDiscardEnable = VK_FALSE;
 		rasterizer.polygonMode = VK_POLYGON_MODE_FILL;
 		rasterizer.lineWidth = 1.0f;
-		rasterizer.cullMode = VK_CULL_MODE_BACK_BIT;
+		rasterizer.cullMode = VK_CULL_MODE_NONE; //TODO - switch back if it works
 		rasterizer.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
 		rasterizer.depthBiasEnable = VK_FALSE;
 
@@ -865,7 +865,7 @@ public:
 				VkDeviceSize offsets[] = { 0 };
 				VkBuffer vertexBufferArray[] = { vertexBuffers[j]};
 				vkCmdBindVertexBuffers(commandBuffers[i], 0, 1, vertexBufferArray, offsets);
-				vkCmdBindIndexBuffer(commandBuffers[i], indexBuffers[j], 0, VK_INDEX_TYPE_UINT16);
+				vkCmdBindIndexBuffer(commandBuffers[i], indexBuffers[j], 0, VK_INDEX_TYPE_UINT32);
 				vkCmdBindDescriptorSets(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &descriptorSets[j][i], 0, NULL);
 				vkCmdDrawIndexed(commandBuffers[i], indicesSize[j], 1, 0, 0, 0);
 			}
@@ -1121,15 +1121,8 @@ public:
 		createCommandPool();
 		createDepthResources();
 		createFramebuffers(); //textures are handled differently so I can have multiple of them
-		int texturePathsSize = texturePaths.size();
-		textureImages.resize(texturePathsSize);
-		textureImageMemory.resize(texturePathsSize);
-		textureImageViews.resize(texturePathsSize);
-		for (int i = 0; i < texturePathsSize; i++) {
-			createTextureImage(i);
-			createTextureImageView(i);
-		}
 		createTextureSampler();
+
 		//createVertexBuffer();
 		//createIndexBuffer();
 		//createUniformBuffers();

@@ -109,9 +109,22 @@ void loop(Renderer &renderer){
 }
 int main() {
 	Renderer renderer;
-	renderer.texturePaths.push_back("chalet.jpg");
-	renderer.texturePaths.push_back("sample_texture.jpg");
+	//renderer.texturePaths.push_back("chalet.jpg");
+	//renderer.texturePaths.push_back("sample_texture.jpg");
 	renderer.initVulkan();
+
+	//texture stuff. Temporary
+	int texturePathsSize = 2;
+	renderer.texturePaths = { "chalet.jpg", "sample_texture.jpg" };
+	renderer.textureImages.resize(texturePathsSize);
+	renderer.textureImageMemory.resize(texturePathsSize);
+	renderer.textureImageViews.resize(texturePathsSize);
+	for (int i = 0; i < texturePathsSize; i++) {
+		renderer.createTextureImage(i);
+		renderer.createTextureImageView(i);
+	}
+
+
 	meshes.push_back(Mesh(renderer));
 	meshes[0].init();
 	meshes.push_back(Mesh(renderer));
@@ -125,6 +138,6 @@ int main() {
 	startTime = SDL_GetPerformanceCounter();
 	SDL_ShowCursor(0);
 	loop(renderer);
-	renderer.cleanup();
+	//renderer.cleanup();
 	return 0;
 }

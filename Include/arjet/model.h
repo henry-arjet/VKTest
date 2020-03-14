@@ -153,7 +153,7 @@ private:
 
 			if (!skip) {
 				Texture texture;
-				texture.id = TextureFromFile(str.C_Str(), this->directory);
+				texture.texIndex = TextureFromFile(str.C_Str(), this->directory);
 				texture.type = typeName;
 				texture.path = str.C_Str();
 				textures.push_back(texture);

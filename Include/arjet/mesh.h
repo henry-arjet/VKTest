@@ -22,9 +22,8 @@ using glm::vec2;
 
 
 struct Texture {
-	unsigned int id;
+	unsigned int texIndex;
 	string type;
-	string path;
 };
 
 class Mesh {
@@ -48,12 +47,14 @@ public:
 	//Or should I do that per model?
 
 	//Functions
-	/*Mesh(Renderer& renderer, vector<Vertex> vertices, vector<unsigned int> indices, vector<Texture> textures) : renderer(renderer){
+	
+	Mesh(Renderer& renderer) : renderer(renderer) {}
+	
+	Mesh(Renderer& renderer, vector<Vertex> vertices, vector<uint> indices, vector<Texture> textures) : renderer(renderer){
 		this->vertices = vertices;
 		this->indices = indices;
 		this->textures = textures;
-	}*/
-	Mesh(Renderer& renderer) : renderer(renderer) {}
+	}
 
 	//void createVertexBuffer() {}
 	void init() {
@@ -203,19 +204,54 @@ public:
 		if (renderer.indicesSize.size() <= index) {
 			renderer.indicesSize.resize(index + 1);
 		}
-		renderer.indicesSize[index] = 6;
+		renderer.indicesSize[index] = indices.size();
 
 
 	}
 	private:
-		const vector<Vertex> vertices = {
-			{{-0.5f, -0.5f, 0.0f}, {1.0f, 0.0f, 0.0f}, {1.0f, 0.0f}},
-			{{0.5f, -0.5f,  0.0f}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f}},
-			{{0.5f,  0.5f,  0.0f}, {0.0f, 0.0f, 1.0f}, {0.0f, 1.0f}},
-			{{-0.5f, 0.5f,  0.0f}, {1.0f, 1.0f, 1.0f}, {1.0f, 1.0f}}
+		vector<Vertex> vertices = {
+			{{-0.5f, -0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}, {1.0f, 1.0f}, {0.0f, 0.0f, 0.0f}}, //0  bl  FRONT
+			{{ 0.5f, -0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}, {0.0f, 1.0f}}, //1  br
+			{{ 0.5f,  0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}, {0.0f, 0.0f}}, //2  tr
+			{{-0.5f,  0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}, {1.0f, 0.0f}}, //3  tl
+			
+		
+			{{-0.5f,  0.5f,  0.5f}, {0.0f, 1.0f, 0.0f}, {1.0f, 1.0f}}, //4     TOP
+			{{ 0.5f,  0.5f,  0.5f}, {0.0f, 1.0f, 0.0f}, {0.0f, 1.0f}}, //5
+			{{ 0.5f,  0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f}}, //6
+			{{-0.5f,  0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}, {1.0f, 0.0f}}, //7
+
+
+			{{-0.5f, -0.5f, -0.5f}, {0.0f, 0.0f, -1.0f}, {1.0f, 1.0f}}, //8  bl  BACK
+			{{ 0.5f, -0.5f, -0.5f}, {0.0f, 0.0f, -1.0f}, {0.0f, 1.0f}}, //9  br
+			{{ 0.5f,  0.5f, -0.5f}, {0.0f, 0.0f, -1.0f}, {0.0f, 0.0f}}, //10 tr
+			{{-0.5f,  0.5f, -0.5f}, {0.0f, 0.0f, -1.0f}, {1.0f, 0.0f}}, //11 tl
+
+
+			{{-0.5f, -0.5f,  0.5f}, {0.0f, -1.0f, 0.0f}, {1.0f, 1.0f}}, //12     TOP
+			{{ 0.5f, -0.5f,  0.5f}, {0.0f, -1.0f, 0.0f}, {0.0f, 1.0f}}, //13
+			{{ 0.5f, -0.5f, -0.5f}, {0.0f, -1.0f, 0.0f}, {0.0f, 0.0f}}, //14
+			{{-0.5f, -0.5f, -0.5f}, {0.0f, -1.0f, 0.0f}, {1.0f, 0.0f}}, //15
+
+
+			{{ 0.5f, -0.5f,  0.5f}, {1.0f,  0.0f, 0.0f}, {1.0f, 1.0f}}, //16     Right
+			{{ 0.5f, -0.5f, -0.5f}, {1.0f,  0.0f, 0.0f}, {0.0f, 1.0f}}, //17
+			{{ 0.5f,  0.5f, -0.5f}, {1.0f,  0.0f, 0.0f}, {0.0f, 0.0f}}, //18
+			{{ 0.5f,  0.5f,  0.5f}, {1.0f,  0.0f, 0.0f}, {1.0f, 0.0f}}, //19
+
+			{{-0.5f, -0.5f,  0.5f}, {-1.0f,  0.0f, 0.0f}, {1.0f, 1.0f}}, //20     Right
+			{{-0.5f, -0.5f, -0.5f}, {-1.0f,  0.0f, 0.0f}, {0.0f, 1.0f}}, //21
+			{{-0.5f,  0.5f, -0.5f}, {-1.0f,  0.0f, 0.0f}, {0.0f, 0.0f}}, //22
+			{{-0.5f,  0.5f,  0.5f}, {-1.0f,  0.0f, 0.0f}, {1.0f, 0.0f}}, //23
+
 		};
-		const vector<ushort> indices = {
-			0,1,2,2,3,0
+		vector<uint> indices = {
+			0,  1,  2,  2,  3,  0,
+			4,  5,  6,  6,  7,  4,
+			8,  9,  10, 10, 11, 8,
+			12, 13, 14, 14, 15, 12,
+			16, 17, 18, 18, 19, 16,
+			20, 21, 22, 22, 23, 20,
 		};
 
 	//VkCommandBuffer localBuffer; //command buffer, Should just need one as the per frame commands will be handled by renderer
