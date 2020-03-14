@@ -43,6 +43,7 @@ public:
 	vector<VkBuffer> uniformBuffers;
 	vector<VkDeviceMemory> uniformBuffersMemory;
 	vec3 position; //Should be in object, but yolo
+	vec3 scale = vec3(1.0f, 1.0f, 1.0f);
 
 	//I should have it so that each mesh will load its data and hand it off to the renderer, but not before checking if the renderer already has the data
 	//Or should I do that per model?
@@ -174,8 +175,10 @@ public:
 		//float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
 		ubo.model = glm::translate(mat4(1.0f), position);
 		//ubo.model = glm::rotate(mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));//Translate then rotate
-		
-		ubo.proj = glm::perspective(glm::radians(45.0f), renderer.swapchainExtent.width / (float)renderer.swapchainExtent.height, 0.1f, 100.0f); //TODO move to init function
+		ubo.model = glm::scale(ubo.model, scale);
+
+
+		ubo.proj = glm::perspective(glm::radians(90.0f), renderer.swapchainExtent.width / (float)renderer.swapchainExtent.height, 0.1f, 100.0f); //TODO move to init function
 		ubo.proj[1][1] *= -1;
 
 
@@ -335,46 +338,7 @@ public:
 //
 //			shader.setInt(("material." + name + number).c_str(), i);
 //			glBindTexture(GL_TEXTURE_2D, textures[i].id);
-//		}
-//		glActiveTexture(GL_TEXTURE0);
-//
-//		//draw
-//		glBindVertexArray(VAO);
-//		glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
-//		glBindVertexArray(0);
-//	}
-//private:
-//	unsigned int VAO, VBO, EBO;
-//	void setupMesh() {
-//		glGenVertexArrays(1, &VAO);
-//		glGenBuffers(1, &VBO);
-//		glGenBuffers(1, &EBO);
-//
-//		glBindVertexArray(VAO);
-//		glBindBuffer(GL_ARRAY_BUFFER, VBO);
-//		glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(Vertex), &vertices[0], GL_STATIC_DRAW);
-//
-//		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-//		glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned int), &indices[0], GL_STATIC_DRAW);
-//
-//		//vertex positions
-//		glEnableVertexAttribArray(0);
-//		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)0);
-//		//vertex normals
-//		glEnableVertexAttribArray(1);
-//		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, Normal));
-//		//Tex Coords
-//		glEnableVertexAttribArray(2);
-//		glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, TexCoords));
-//		//Tangent and bitangent
-//		glEnableVertexAttribArray(3);
-//		glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, Tangent));
-//		glEnableVertexAttribArray(4);
-//		glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, Bitangent));
-//
-//
-//		glBindVertexArray(0);
-//	}
+
 };
 
 #endif

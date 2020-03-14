@@ -1,11 +1,5 @@
-Current implementation - recreates descriptor sets every time I want to use a different one
-New implementation - Prefab descriptor sets, swap on draw call
-	- In command buffer
-		-Each mesh should have its own command buffers for drawing
-		-DrawFrame should submit all of these buffers at once - offset
-		-Eash mesh should have a function that submits a command buffer to Renderer, and then a renderer function that pushes the draw call
-Nevermind, don't push new command buffer, push new descriptor set
-
-Planning 2.0
-	-Each mesh has it's own descriptor pool
-	-descriptor sets and vertex buffers are pushed to renderer at init
+I need to add a method for switching shaders. I think I'll create a struct of shader/pipeline information, 
+then apply those structs on createCommandBuffers. Then I'll give each of those shader infos a list of meshes that are bound
+to them. When calling createCommandBuffers, I'll do a for loop for every frame in the swapchain, then a for loop
+for every shader, and then a for loop for every mesh in that shader. This will mean I will have to assign shaders before creating
+the command buffers.

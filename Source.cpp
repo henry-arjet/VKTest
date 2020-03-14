@@ -159,6 +159,7 @@ int main() {
 	meshes[1].init();
 
 	for (int j = 0; j < models[0].meshes.size(); j++) {
+		models[0].meshes[j].scale = vec3(0.1f, 0.1f, 0.1f);
 		models[0].meshes[j].init();
 	}
 	renderer.finalizeVulkan();

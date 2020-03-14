@@ -641,7 +641,6 @@ public:
 		vkMapMemory(device, stagingBufferMemory, 0, imageSize, 0, &data);
 		memcpy(data, pixels, static_cast<size_t>(imageSize));
 		vkUnmapMemory(device, stagingBufferMemory);
-		cout << "Mapped the texture staging buffer!\n";
 
 		stbi_image_free(pixels);
 
@@ -856,6 +855,9 @@ public:
 			renderPassInfo.clearValueCount = scuint(clearValues.size());
 			renderPassInfo.pClearValues = clearValues.data();
 			vkCmdBeginRenderPass(commandBuffers[i], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+
+
+			//I think to use multiple shaders, I'll have to bind multiple pipelines
 			vkCmdBindPipeline(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline);
 			
 
