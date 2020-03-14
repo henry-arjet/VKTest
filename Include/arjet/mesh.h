@@ -24,6 +24,7 @@ using glm::vec2;
 struct Texture {
 	unsigned int texIndex;
 	string type;
+	string path; //At the moment, only used to check if it's been loaded yet
 };
 
 class Mesh {

@@ -8,15 +8,14 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
-#define STB_IMAGE_IMPLEMENTATION
-#include <stb_image.h>
 
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 
-#include <learnopengl/shader.h>
-#include <learnopengl/mesh.h>
+#include <arjet/mesh.h>
+#include <arjet/renderer.h>
+#include <arjet/vertex.h>
 
 #include <string>
 #include <fstream>
@@ -28,26 +27,32 @@
 using std::vector;
 
 
-unsigned int TextureFromFile(const char *path, const string &directory, bool gamma = false);
+uint TextureFromFile(Renderer &renderer, uint count, const char *path, const string &directory, bool gamma = false);
 
 class Model {
 public:
 	//functions
-	Model(string const &path) {
+	Model(Renderer &r, string const &path, uint &mCount, uint &tCount) : renderer(r), meshCounter(mCount), textureCounter(tCount) {
 		loadModel(path);
 	}
-	void Draw(Shader shader) {
+	
+	/*void Draw(Shader shader) {
 
 		for (unsigned int i = 0; i < meshes.size(); i++) {
 			meshes[i].Draw(shader);
 		}
 
-	}
+	}*/
+
+	vector<Mesh> meshes; //needs to be accessable
 private:
 	//model data
-	vector<Mesh> meshes;
 	string directory;
 	vector<Texture> textures_loaded;
+	Renderer& renderer;
+	uint& meshCounter;    //used for assigning index numbers to
+	uint& textureCounter;  //meshes and textures
+
 	//functions
 	void loadModel(string const &path) {
 		Assimp::Importer importer;
@@ -85,30 +90,30 @@ private:
 			vector.x = mesh->mVertices[i].x;
 			vector.y = mesh->mVertices[i].y;
 			vector.z = mesh->mVertices[i].z;
-			vertex.Position = vector;
+			vertex.pos = vector;
 
 			vector.x = mesh->mNormals[i].x;
 			vector.y = mesh->mNormals[i].y;
 			vector.z = mesh->mNormals[i].z;
-			vertex.Normal = vector;
+			vertex.norm = vector;
 
 			if (mesh->mTextureCoords[0]) { // does it have any?
 				glm::vec2 vec;
 				vec.x = mesh->mTextureCoords[0][i].x;
 				vec.y = mesh->mTextureCoords[0][i].y;
-				vertex.TexCoords = vec;
+				vertex.texCoord = vec;
 			}
-			else vertex.TexCoords = glm::vec2(0.0f, 0.0f);
+			else vertex.texCoord = glm::vec2(0.0f, 0.0f);
 
-			vector.x = mesh->mTangents[i].x;
+			vector.x = mesh->mTangents[i].x; //We know it has tan and bitangent because I asked assimp to create them
 			vector.y = mesh->mTangents[i].y;
 			vector.z = mesh->mTangents[i].z;
-			vertex.Tangent = vector;
+			vertex.tan = vector;
 
 			vector.x = mesh->mBitangents[i].x;
 			vector.y = mesh->mBitangents[i].y;
 			vector.z = mesh->mBitangents[i].z;
-			vertex.Bitangent = vector;
+			vertex.bit = vector;
 			vertices.push_back(vertex);
 		}
 
@@ -123,8 +128,8 @@ private:
 		if (mesh->mMaterialIndex >= 0) { //again does it have any
 
 			aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
-			cout << material->GetTextureCount(aiTextureType_UNKNOWN) << endl;
-			cout << material->GetTextureCount(aiTextureType_DIFFUSE) << " " << material->GetTextureCount(aiTextureType_SPECULAR) << " " << material->GetTextureCount(aiTextureType_HEIGHT) << " " << endl;
+			cout << "Unknown textures: " << material->GetTextureCount(aiTextureType_UNKNOWN) << endl;
+			cout << "Diff, spec, and norm/height: " << material->GetTextureCount(aiTextureType_DIFFUSE) << " " << material->GetTextureCount(aiTextureType_SPECULAR) << " " << material->GetTextureCount(aiTextureType_HEIGHT) << " " << endl;
 			vector<Texture> diffuseMaps = loadMaterialTextures(material, aiTextureType_DIFFUSE, "texture_diffuse");
 			vector<Texture> specularMaps = loadMaterialTextures(material, aiTextureType_SPECULAR, "texture_specular");
 			vector<Texture> normalMaps = loadMaterialTextures(material, aiTextureType_HEIGHT, "texture_normal");
@@ -135,7 +140,7 @@ private:
 
 
 		}
-		return Mesh(vertices, indices, textures);
+		return Mesh(renderer, vertices, indices, textures);
 	}
 	vector<Texture> loadMaterialTextures(aiMaterial *mat, aiTextureType type, string typeName){
 		vector<Texture> textures;
@@ -153,7 +158,7 @@ private:
 
 			if (!skip) {
 				Texture texture;
-				texture.texIndex = TextureFromFile(str.C_Str(), this->directory);
+				texture.texIndex = textureCounter++; // tc++ so it passes it's value, then itterates. So we don't have the first one as 1, the second as 2, etc.
 				texture.type = typeName;
 				texture.path = str.C_Str();
 				textures.push_back(texture);
@@ -164,47 +169,23 @@ private:
 	}
 };
 
-unsigned int TextureFromFile(const char *path, const string &directory, bool gamma)
+uint TextureFromFile(Renderer &renderer, uint count, const char *path, const string &directory, bool gamma)
 {
 	string filename = string(path);
 	filename = filename.substr(filename.find_last_of('\\') + 1, filename.size());
 
 	filename = directory + "/textures/" + filename;
 
-	cout << "loaded " << filename << endl;
-	unsigned int textureID;
-	glGenTextures(1, &textureID);
-
-	int width, height, nrComponents;
-	unsigned char *data = stbi_load(filename.c_str(), &width, &height, &nrComponents, 0);
-	if (data)
-	{
-		GLenum format;
-		if (nrComponents == 1)
-			format = GL_RED;
-		else if (nrComponents == 3)
-			format = GL_RGB;
-		else if (nrComponents == 4)
-			format = GL_RGBA;
-
-		glBindTexture(GL_TEXTURE_2D, textureID);
-		glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
-		glGenerateMipmap(GL_TEXTURE_2D);
-
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-		stbi_image_free(data);
-	}
-	else
-	{
-		std::cout << "Texture failed to load at path: " << path << std::endl;
-		stbi_image_free(data);
+	cout << "loading " << filename << endl;
+	if (renderer.textureImages.size() <= count) {
+		renderer.textureImages.resize(count + 1);
+		renderer.textureImageViews.resize(count + 1);
+		renderer.textureImageMemory.resize(count + 1);
 	}
 
-	return textureID;
+	renderer.createTextureImage(count, filename.c_str());
+
+	return count;
 }
 
 

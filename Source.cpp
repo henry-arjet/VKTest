@@ -4,6 +4,7 @@
 #include <arjet/renderer.h>
 #include <arjet/camera.h>
 #include <arjet/input.h>
+#include <arjet/model.h>
 #include <arjet/mesh.h>
 
 #include <SDL2/SDL.h>
@@ -30,6 +31,12 @@ uint64_t lastTime, thisTime, startTime; //helper for time keeping
 Input input;
 bool mouseMode = true;
 vector<Mesh> meshes;
+vector<Model> models;
+uint meshCounter;    //used for assigning index numbers to
+uint textureCounter;  //meshes and textures
+
+
+
 
 void loop(Renderer &renderer){
 	bool stillRunning = true;
@@ -99,11 +106,15 @@ void loop(Renderer &renderer){
 		meshes[0].position = vec3(0, -1*glm::sin(now), -2.0f);
 		meshes[1].ubo.view = mainCamera.GetViewMatrix();
 		meshes[1].position = vec3(glm::cos(now), glm::sin(now), 0);
+		models[0].meshes[0].ubo.view = mainCamera.GetViewMatrix();
+		models[0].meshes[0].position = vec3(0, 0, 0);
+
+
 
 		renderer.startFrame();
 		meshes[0].updateUniformBuffer(renderer.currentFrame);
 		meshes[1].updateUniformBuffer(renderer.currentFrame);
-
+		models[0].meshes[0].updateUniformBuffer(renderer.currentFrame);
 		renderer.finishFrame();
 	}
 }
@@ -118,11 +129,12 @@ int main() {
 	renderer.texturePaths = { "chalet.jpg", "sample_texture.jpg" };
 	renderer.textureImages.resize(texturePathsSize);
 	renderer.textureImageMemory.resize(texturePathsSize);
-	renderer.textureImageViews.resize(texturePathsSize);
-	for (int i = 0; i < texturePathsSize; i++) {
-		renderer.createTextureImage(i);
-		renderer.createTextureImageView(i);
-	}
+	renderer.textureImageViews.resize(texturePathsSize);// I'll have to get arround this resizing at some point. Use mesh.push logic
+	renderer.createTextureImage(0, "chalet.jpg");
+	renderer.createTextureImage(1, "sample_texture.jpg");
+
+	textureCounter = 2;
+	meshCounter = 2;
 
 
 	meshes.push_back(Mesh(renderer));
@@ -132,6 +144,10 @@ int main() {
 	meshes[1].texIndex = 1;
 
 	meshes[1].init();
+
+
+	models.push_back(Model(renderer, "models/nanosuit/scene.fbx", meshCounter, textureCounter));
+
 	renderer.finalizeVulkan();
 
 	mainCamera = Camera();

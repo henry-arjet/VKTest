@@ -624,11 +624,11 @@ public:
 		endSingleTimeCommands(commandBuffer);
 	}
 
-	void createTextureImage(int index) {
+	void createTextureImage(int index, cstr path) {
 
 		int texWidth, texHeight, texChannels;
 
-		stbi_uc* pixels = stbi_load(texturePaths[index].c_str(), &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
+		stbi_uc* pixels = stbi_load(path, &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
 		VkDeviceSize imageSize = texWidth * texHeight * 4;
 		assert(pixels);
 
@@ -656,7 +656,7 @@ public:
 
 		vkDestroyBuffer(device, stagingBuffer, NULL);
 		vkFreeMemory(device, stagingBufferMemory, NULL);
-
+		createTextureImageView(index);
 	}
 
 	VkImageView createImageView(VkImage image, VkFormat format, VkImageAspectFlags aspectFlags = VK_IMAGE_ASPECT_COLOR_BIT) {
