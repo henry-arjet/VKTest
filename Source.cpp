@@ -106,15 +106,18 @@ void loop(Renderer &renderer){
 		meshes[0].position = vec3(0, -1*glm::sin(now), -2.0f);
 		meshes[1].ubo.view = mainCamera.GetViewMatrix();
 		meshes[1].position = vec3(glm::cos(now), glm::sin(now), 0);
-		models[0].meshes[0].ubo.view = mainCamera.GetViewMatrix();
-		models[0].meshes[0].position = vec3(0, 0, 0);
-
+		for (int j = 0; j < models[0].meshes.size(); j++) {
+			models[0].meshes[j].ubo.view = mainCamera.GetViewMatrix();
+			models[0].meshes[j].position = vec3(0, 0, 0);
+		}
 
 
 		renderer.startFrame();
 		meshes[0].updateUniformBuffer(renderer.currentFrame);
 		meshes[1].updateUniformBuffer(renderer.currentFrame);
-		models[0].meshes[0].updateUniformBuffer(renderer.currentFrame);
+		for (int j = 0; j < models[0].meshes.size(); j++) {
+			models[0].meshes[j].updateUniformBuffer(renderer.currentFrame);
+		}
 		renderer.finishFrame();
 	}
 }
@@ -154,7 +157,10 @@ int main() {
 
 	meshes[0].init();
 	meshes[1].init();
-	models[0].meshes[0].init();
+
+	for (int j = 0; j < models[0].meshes.size(); j++) {
+		models[0].meshes[j].init();
+	}
 	renderer.finalizeVulkan();
 
 	mainCamera = Camera();

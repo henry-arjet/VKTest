@@ -23,8 +23,8 @@ using glm::vec2;
 
 struct Texture {
 	unsigned int texIndex = 0;
-	string type;
-	string path; //At the moment, only used to check if it's been loaded yet
+	string type = "blank";
+	string path = "blank"; //At the moment, only used to check if it's been loaded yet
 };
 
 class Mesh {
@@ -152,7 +152,7 @@ public:
 			VkDescriptorImageInfo imageInfo = {};
 
 			imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-
+			cout << "Applying texture from " << textures[0].path << endl;
 			imageInfo.imageView = renderer.textureImageViews[textures[0].texIndex ]; //Should do it like this so I don't have copies of the same texture. 
 			imageInfo.sampler = renderer.textureSampler; //the default texture sampler we set up in the Renderer class
 

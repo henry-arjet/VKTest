@@ -35,14 +35,6 @@ public:
 	Model(Renderer &r, string const &path, uint &mCount, uint &tCount) : renderer(r), meshCounter(mCount), textureCounter(tCount) {
 		loadModel(path);
 	}
-	
-	/*void Draw(Shader shader) {
-
-		for (unsigned int i = 0; i < meshes.size(); i++) {
-			meshes[i].Draw(shader);
-		}
-
-	}*/
 
 	vector<Mesh> meshes; //needs to be accessable
 private:
@@ -57,7 +49,6 @@ private:
 	void loadModel(string const &path) {
 		Assimp::Importer importer;
 		const aiScene *scene = importer.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_CalcTangentSpace);
-		//cout << scene->mNumMaterials << endl;
 		if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) {
 			cout << "ERROR::ASSIMP::" << importer.GetErrorString() << endl;
 		}
