@@ -57,9 +57,8 @@ private:
 	void loadModel(string const &path) {
 		Assimp::Importer importer;
 		const aiScene *scene = importer.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_CalcTangentSpace);
-
 		//cout << scene->mNumMaterials << endl;
-		if (!scene | scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) {
+		if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) {
 			cout << "ERROR::ASSIMP::" << importer.GetErrorString() << endl;
 		}
 		directory = path.substr(0, path.find_last_of('/'));
@@ -140,7 +139,7 @@ private:
 
 
 		}
-		return Mesh(renderer, vertices, indices, textures);
+		return Mesh(renderer, vertices, indices, textures, meshCounter++);//iterates here
 	}
 	vector<Texture> loadMaterialTextures(aiMaterial *mat, aiTextureType type, string typeName){
 		vector<Texture> textures;
@@ -157,6 +156,7 @@ private:
 			}
 
 			if (!skip) {
+				TextureFromFile(renderer, textureCounter, str.C_Str(), directory);
 				Texture texture;
 				texture.texIndex = textureCounter++; // tc++ so it passes it's value, then itterates. So we don't have the first one as 1, the second as 2, etc.
 				texture.type = typeName;

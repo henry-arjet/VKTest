@@ -138,16 +138,23 @@ int main() {
 
 
 	meshes.push_back(Mesh(renderer));
-	meshes[0].init();
 	meshes.push_back(Mesh(renderer));
+
+
+	meshes[0].textures.resize(1);
+	meshes[1].textures.resize(1);
+	meshes[1].textures[0].texIndex = 1;
+
 	meshes[1].index = 1;
 	meshes[1].texIndex = 1;
 
-	meshes[1].init();
 
 
 	models.push_back(Model(renderer, "models/nanosuit/scene.fbx", meshCounter, textureCounter));
 
+	meshes[0].init();
+	meshes[1].init();
+	models[0].meshes[0].init();
 	renderer.finalizeVulkan();
 
 	mainCamera = Camera();

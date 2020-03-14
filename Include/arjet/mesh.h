@@ -22,7 +22,7 @@ using glm::vec2;
 
 
 struct Texture {
-	unsigned int texIndex;
+	unsigned int texIndex = 0;
 	string type;
 	string path; //At the moment, only used to check if it's been loaded yet
 };
@@ -51,7 +51,8 @@ public:
 	
 	Mesh(Renderer& renderer) : renderer(renderer) {}
 	
-	Mesh(Renderer& renderer, vector<Vertex> vertices, vector<uint> indices, vector<Texture> textures) : renderer(renderer){
+	Mesh(Renderer& renderer, vector<Vertex> vertices, vector<uint> indices, vector<Texture> textures, uint index) : renderer(renderer){
+		this->index = index;
 		this->vertices = vertices;
 		this->indices = indices;
 		this->textures = textures;
@@ -151,7 +152,8 @@ public:
 			VkDescriptorImageInfo imageInfo = {};
 
 			imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-			imageInfo.imageView = renderer.textureImageViews[texIndex]; //Should do it like this so I don't have copies of the same texture. 
+
+			imageInfo.imageView = renderer.textureImageViews[textures[0].texIndex ]; //Should do it like this so I don't have copies of the same texture. 
 			imageInfo.sampler = renderer.textureSampler; //the default texture sampler we set up in the Renderer class
 
 			descriptorWrites[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
@@ -173,7 +175,7 @@ public:
 		ubo.model = glm::translate(mat4(1.0f), position);
 		//ubo.model = glm::rotate(mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));//Translate then rotate
 		
-		ubo.proj = glm::perspective(glm::radians(45.0f), renderer.swapchainExtent.width / (float)renderer.swapchainExtent.height, 0.1f, 10.0f); //TODO move to init function
+		ubo.proj = glm::perspective(glm::radians(45.0f), renderer.swapchainExtent.width / (float)renderer.swapchainExtent.height, 0.1f, 100.0f); //TODO move to init function
 		ubo.proj[1][1] *= -1;
 
 
