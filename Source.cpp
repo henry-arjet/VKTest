@@ -5,6 +5,7 @@
 #include <arjet/camera.h>
 #include <arjet/shader.h>
 #include <arjet/input.h>
+#include <arjet/light.h>
 #include <arjet/model.h>
 #include <arjet/mesh.h>
 
@@ -35,6 +36,7 @@ vector<Mesh> meshes;
 vector<Model> models;
 uint meshCounter;    //used for assigning index numbers to
 uint textureCounter;  //meshes and textures
+vector<Light> lights;
 
 
 
@@ -76,6 +78,7 @@ void loop(Renderer &renderer){
 			}
 		}
 		//Main Logic
+		//Input
 		if (input.GetButtonDown("A")) {
 			mainCamera.ProcessKeyboard(LEFT, deltaTime);
 		}if (input.GetButtonDown("S")) {
@@ -103,15 +106,20 @@ void loop(Renderer &renderer){
 			mainCamera.ProcessMouseMovement(xoff - 50, -1 * yoff + 50);
 			SDL_WarpMouseInWindow(renderer.window, 50, 50);
 		}
-		meshes[0].ubo.view = mainCamera.GetViewMatrix();
-		meshes[0].position = vec3(0, -1*glm::sin(now), -2.0f);
+		//End of input
+		meshes[0].ubo.view = mainCamera.GetViewMatrix(); //still light mesh
+		lights[0].updatePositions (vec3(0, -1*glm::sin(now) + 0.6f, glm::cos(now) - 0.3f));
 		meshes[1].ubo.view = mainCamera.GetViewMatrix();
 		meshes[1].position = vec3(glm::cos(now), glm::sin(now), 0);
 		for (int j = 0; j < models[0].meshes.size(); j++) {
 			models[0].meshes[j].ubo.view = mainCamera.GetViewMatrix();
 		}
 
-
+		meshes[1].ubo.lights[0] = lights[0].info;
+		for (int j = 0; j < models[0].meshes.size(); j++) {
+			models[0].meshes[j].ubo.lights[0] = lights[0].info;
+		}
+		//cout << meshes[1].ubo.lights[0].strength << endl; 
 		renderer.startFrame();
 		meshes[0].updateUniformBuffer(renderer.currentFrame);
 		meshes[1].updateUniformBuffer(renderer.currentFrame);
@@ -142,14 +150,15 @@ int main() {
 	meshCounter = 2;
 
 
+	meshes.push_back(Mesh(renderer));//mesh 0
 	meshes.push_back(Mesh(renderer));
-	meshes.push_back(Mesh(renderer));
-
-
+	lights.push_back(Light(meshes[0])); //creates a light, assigns it mesh 0
+	lights[0].info.inUse = true; //Says to the frag shader that we're actually using this light
+	lights[0].info.strength = 1.0f;
 	meshes[0].textures.resize(1);//initializes with default texture and indexes, all 0
 	meshes[1].textures.resize(1);
 	meshes[1].index = 1;
-	meshes[0].shaderIndex = 1;
+	meshes[0].shaderIndex = 1; //Use light source shader (hardcoded white)
 
 	models.push_back(Model(renderer, "models/nanosuit/scene.fbx", meshCounter, textureCounter));
 

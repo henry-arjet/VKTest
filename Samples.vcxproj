@@ -29,6 +29,7 @@
   <ItemGroup>
     <ClInclude Include="Include\arjet\camera.h" />
     <ClInclude Include="Include\arjet\input.h" />
+    <ClInclude Include="Include\arjet\light.h" />
     <ClInclude Include="Include\arjet\mesh.h" />
     <ClInclude Include="Include\arjet\model.h" />
     <ClInclude Include="Include\arjet\renderer.h" />

@@ -170,7 +170,7 @@ public:
 			vkUpdateDescriptorSets(renderer.device, static_cast<uint>(descriptorWrites.size()), descriptorWrites.data(), 0, NULL);
 		}
 	}
-	void updateUniformBuffer(uint currentImage) { //TODO move to mesh
+	void updateUniformBuffer(uint currentImage) {
 		static auto startTime = std::chrono::high_resolution_clock::now();
 
 		//auto currentTime = std::chrono::high_resolution_clock::now();
@@ -182,6 +182,8 @@ public:
 
 		ubo.proj = glm::perspective(glm::radians(70.0f), renderer.swapchainExtent.width / (float)renderer.swapchainExtent.height, 0.02f, 100.0f); //TODO move to init function
 		ubo.proj[1][1] *= -1;
+
+		ubo.normalMatrix = mat3(glm::transpose(glm::inverse(ubo.view*ubo.model)));
 
 		void* data;
 
@@ -199,7 +201,7 @@ public:
 		if (renderer.vertexBuffers.size() <= index) {
 			renderer.vertexBuffers.resize(index + 1);
 		}
-		renderer.vertexBuffers[index] = vertexBuffer; //TODO update for multiple meshes
+		renderer.vertexBuffers[index] = vertexBuffer; 
 		
 		if (renderer.indexBuffers.size() <= index) {
 			renderer.indexBuffers.resize(index + 1);

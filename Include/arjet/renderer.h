@@ -46,10 +46,23 @@ using glm::vec2;
 using glm::vec3;
 using glm::mat4;
 
+//#define MAX_LIGHTS 4; //The maximum number of lights the shader can su
+struct LightInfo {
+	vec3 position;
+	vec3 color = vec3(1.0f, 1.0f, 1.0f);
+	float strength = 1.0f;
+	bool isDirectional = false;
+	bool inUse = false;
+
+};
+
+
 struct UniformBufferObject {
 	alignas(16) mat4 model;
 	alignas(16) mat4 view;
 	alignas(16) mat4 proj;
+	alignas(16) mat3 normalMatrix;
+	alignas(16) LightInfo lights[4];
 };
 
 
@@ -186,7 +199,7 @@ public:
 		bindings[0].binding = 0;
 		bindings[0].descriptorCount = 1;
 		bindings[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-		bindings[0].stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+		bindings[0].stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
 		
 		
 		bindings[1].binding = 1;
