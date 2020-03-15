@@ -3,13 +3,14 @@
 
 #include <arjet/renderer.h>
 #include <arjet/camera.h>
+#include <arjet/shader.h>
 #include <arjet/input.h>
 #include <arjet/model.h>
 #include <arjet/mesh.h>
 
-#include <SDL2/SDL.h>
 #include <SDL2/SDL_syswm.h>
 #include <SDL2/SDL_vulkan.h>
+#include <SDL2/SDL.h>
 #include <iostream>
 
 
@@ -123,16 +124,19 @@ void loop(Renderer &renderer){
 }
 int main() {
 	Renderer renderer;
-	//renderer.texturePaths.push_back("chalet.jpg");
-	//renderer.texturePaths.push_back("sample_texture.jpg");
 	renderer.initVulkan();
+	//Do shaders
+	renderer.shaders.push_back(Shader("Shaders/vert.spv", "Shaders/frag.spv", 0, renderer.device));
+	   
+	renderer.layThePipe(); //I should change the shader to have an init function called from createPipeline so I don't have to split it up like this
+	//On that note I should do the same with meshes
 
-	//texture stuff. Temporary
+	//Texture stuff. Temporary. I could burn this whole thing down, but I'll keep it just for debugging.
 	int texturePathsSize = 2;
 	renderer.texturePaths = { "chalet.jpg", "sample_texture.jpg" };
 	renderer.textureImages.resize(texturePathsSize);
 	renderer.textureImageMemory.resize(texturePathsSize);
-	renderer.textureImageViews.resize(texturePathsSize);// I'll have to get arround this resizing at some point. Use mesh.push logic
+	renderer.textureImageViews.resize(texturePathsSize);
 	renderer.createTextureImage(0, "chalet.jpg");
 	renderer.createTextureImage(1, "sample_texture.jpg");
 

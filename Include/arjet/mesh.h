@@ -1,7 +1,7 @@
 #ifndef MESH_H
 #define MESH_H
 //adapted partly from vulken-tutorial, mostly my own
-
+//TODO fix this. Make it a part of a renderer class, like Shader.
 
 #include <vulkan/vulkan.hpp>
 #include <glm/glm.hpp>
@@ -34,6 +34,7 @@ public:
 	vector<Texture> textures; //Not used right now
 	uint index = 0; //This is how it will keep track of where it is in the arrays in renderer
 	uint texIndex = 0;
+	uint shaderIndex = 0;
 	vector<VkDescriptorSet> descriptorSets; //Local. One for each frame
 	VkBuffer vertexBuffer;
 	VkDeviceMemory vertexBufferMemory;
@@ -44,6 +45,7 @@ public:
 	vector<VkDeviceMemory> uniformBuffersMemory;
 	vec3 position; //Should be in object, but yolo
 	vec3 scale = vec3(1.0f, 1.0f, 1.0f);
+
 
 	//I should have it so that each mesh will load its data and hand it off to the renderer, but not before checking if the renderer already has the data
 	//Or should I do that per model?
@@ -178,10 +180,8 @@ public:
 		ubo.model = glm::scale(ubo.model, scale);
 
 
-		ubo.proj = glm::perspective(glm::radians(90.0f), renderer.swapchainExtent.width / (float)renderer.swapchainExtent.height, 0.1f, 100.0f); //TODO move to init function
+		ubo.proj = glm::perspective(glm::radians(70.0f), renderer.swapchainExtent.width / (float)renderer.swapchainExtent.height, 0.02f, 100.0f); //TODO move to init function
 		ubo.proj[1][1] *= -1;
-
-
 
 		void* data;
 
@@ -189,7 +189,6 @@ public:
 		vkMapMemory(renderer.device, uniformBuffersMemory[currentImage], 0, sizeof(ubo), 0, &data);
 		memcpy(data, &ubo, sizeof(ubo));
 		vkUnmapMemory(renderer.device, uniformBuffersMemory[currentImage]);
-
 	}
 	void pushMesh() {
 		if (renderer.descriptorSets.size() <= index) {
@@ -212,6 +211,9 @@ public:
 		}
 		renderer.indicesSize[index] = indices.size();
 
+		if (renderer.shaderIndices.size() <= index) {
+			renderer.shaderIndices.resize(index + 1);
+		}renderer.shaderIndices[index] = shaderIndex;
 
 	}
 	private:

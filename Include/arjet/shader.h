@@ -1,6 +1,8 @@
 #ifndef SHADER_H
 #define SHADER_H
-#include <glad/glad.h>
+
+#include <vulkan/vulkan.hpp>
+
 
 #include <string>
 #include <fstream>
@@ -9,120 +11,79 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include <vector>
 
 using std::string;
 using std::cout;
 using std::endl;
 using std::ifstream;
+using std::vector;
 
 using glm::vec3;
 using glm::vec4;
 using glm::mat3;
 using glm::mat4;
 
+
+static vector<char> readFile(const std::string& filename) { //Copied from renderer, in turn copied from Vulkan Tutorial
+	std::ifstream file(filename, std::ios::ate | std::ios::binary);
+	if (!file.is_open()) {
+		throw std::runtime_error("Failed to open file");
+	}
+	size_t fileSize = (size_t)file.tellg();
+	std::vector<char> buffer(fileSize);
+
+	file.seekg(0);
+	file.read(buffer.data(), fileSize);
+	file.close();
+	return buffer;
+}
+
 class Shader {
 public:
-	unsigned int ID;
-
-	Shader(const GLchar* vertexPath, const GLchar* fragmentPath) {
+	VkPipelineShaderStageCreateInfo shaderStages[2];
+	uint index;//Just to keep track of it. Should match the index in the renderer
+	Shader(const string vertexPath, const string fragmentPath, uint index, VkDevice d) {
+		device = d;
+		this->index = index;
 		//read from files
 		string vertexCode;
 		string fragmentCode;
 		ifstream vShaderFile;
 		ifstream fShaderFile;
+		uint32_t shaderIndex;
+		auto vertShaderCode = readFile(vertexPath.c_str());
+		auto fragShaderCode = readFile(fragmentPath.c_str());
 
-		vShaderFile.exceptions(ifstream::failbit | ifstream::badbit);
-		fShaderFile.exceptions(ifstream::failbit | ifstream::badbit);
-		try {
-			vShaderFile.open(vertexPath);
-			fShaderFile.open(fragmentPath);
-			std::stringstream vShaderStream, fShaderStream;
+		VkShaderModule vertShaderModule = createShaderModule(vertShaderCode);
+		VkShaderModule fragShaderModule = createShaderModule(fragShaderCode);
 
-			vShaderStream << vShaderFile.rdbuf();
-			fShaderStream << fShaderFile.rdbuf();
-			vShaderFile.close();
-			fShaderFile.close();
+		VkPipelineShaderStageCreateInfo vertShaderStageInfo = {};
+		vertShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+		vertShaderStageInfo.stage = VK_SHADER_STAGE_VERTEX_BIT;
+		vertShaderStageInfo.module = vertShaderModule;
+		vertShaderStageInfo.pName = "main";
 
-			vertexCode = vShaderStream.str();
-			fragmentCode = fShaderStream.str();
-		}
-		catch (ifstream::failure e) {
-			cout << "ERROR::SHADER::FILE_NOT_SUCCESFULLY_READ\n" << endl;
-		}
-		const char* vShaderCode = vertexCode.c_str();
-		const char* fShaderCode = fragmentCode.c_str();
+		VkPipelineShaderStageCreateInfo fragShaderStageInfo = {};
+		fragShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+		fragShaderStageInfo.stage = VK_SHADER_STAGE_FRAGMENT_BIT;
+		fragShaderStageInfo.module = fragShaderModule;
+		fragShaderStageInfo.pName = "main";
 
-		//compile
-		unsigned int vertex, fragment;
-		int success;
-		char infoLog[512];
-		
-		vertex = glCreateShader(GL_VERTEX_SHADER);
-		glShaderSource(vertex, 1, &vShaderCode, NULL);
-		glCompileShader(vertex);
-
-		glGetShaderiv(vertex, GL_COMPILE_STATUS, &success);
-		if (!success) {
-			glGetShaderInfoLog(vertex, 512, NULL, infoLog);
-			cout << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n" << endl;
-
-		};
-
-		fragment = glCreateShader(GL_FRAGMENT_SHADER);
-		glShaderSource(fragment, 1, &fShaderCode, NULL);
-		glCompileShader(fragment);
-
-		glGetShaderiv(fragment, GL_COMPILE_STATUS, &success);
-		if (!success) {
-			glGetShaderInfoLog(fragment, 512, NULL, infoLog);
-			cout << "ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n" << endl;
-			cout << ID << endl;
-		};
-
-		ID = glCreateProgram();
-		glAttachShader(ID, vertex);
-		glAttachShader(ID, fragment);
-		glLinkProgram(ID);
-
-		glGetProgramiv(ID, GL_LINK_STATUS, &success);
-		if (!success) {
-			glGetProgramInfoLog(ID, 512, NULL, infoLog);
-			cout << "ERROR::SHADER::PROGRAM::LINKING_FAILED\n" << infoLog << endl;
-		}
-
-		glDeleteShader(vertex);
-		glDeleteShader(fragment);
-
+		shaderStages[0] = vertShaderStageInfo;
+		shaderStages[1] = fragShaderStageInfo;
 	}
-
-
-	void use() {
-		glUseProgram(ID);
-	}
-
-	void setBool(const string &name, bool value) const {
-		glUniform1i(glGetUniformLocation(ID, name.c_str()), (int)value);
-	}
-	void setInt(const string &name, int value) const {
-		glUniform1i(glGetUniformLocation(ID, name.c_str()), value);
-	}
-	void setFloat(const std::string &name, float value) const {
-		glUniform1f(glGetUniformLocation(ID, name.c_str()), value);
-	}
-	void setVec3(const std::string &name, vec3 value) const {
-		glUniform3f(glGetUniformLocation(ID, name.c_str()), value.x, value.y, value.z);
-	}
-	void setVec3(const std::string &name, float valueX, float valueY, float valueZ) const {
-		glUniform3f(glGetUniformLocation(ID, name.c_str()), valueX, valueY, valueZ);
-	}
-	void setVec4(const std::string &name, vec4 value) const {
-		glUniform4f(glGetUniformLocation(ID, name.c_str()), value.x, value.y, value.z, value.w);
-	}
-	void setMat4(const std::string &name, mat4 value) const {
-		glUniformMatrix4fv(glGetUniformLocation(ID, name.c_str()), 1, GL_FALSE, glm::value_ptr(value));
-	}
-	void setMat3(const std::string &name, mat3 value) const {
-		glUniformMatrix3fv(glGetUniformLocation(ID, name.c_str()), 1, GL_FALSE, glm::value_ptr(value));
+private:
+	VkDevice device;
+	VkShaderModule createShaderModule(const std::vector<char>& code) {
+		VkShaderModuleCreateInfo createInfo = {};
+		createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
+		createInfo.codeSize = code.size();
+		createInfo.pCode = reinterpret_cast<const uint32_t*>(code.data());
+		VkShaderModule shaderModule;
+		VkResult res = vkCreateShaderModule(device, &createInfo, NULL, &shaderModule);
+		assert(res == VK_SUCCESS);
+		return shaderModule;
 	}
 };
 

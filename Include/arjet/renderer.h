@@ -20,6 +20,7 @@
 #define STB_IMAGE_IMPLEMENTATION
 
 #include <arjet/vertex.h>
+#include <arjet/shader.h>
 
 #include <stb_image.h>
 #include <glm/glm.hpp>
@@ -84,7 +85,7 @@ public:
 	VkRenderPass renderPass;
 	VkDescriptorSetLayout descriptorSetLayout;
 	VkPipelineLayout pipelineLayout;
-	VkPipeline graphicsPipeline;
+	vector<VkPipeline> graphicsPipelines;
 	vector<VkImageView> swapchainViews;
 	vector<VkFramebuffer> swapchainFramebuffers;
 	vector<VkImage> swapchainImages;
@@ -106,16 +107,18 @@ public:
 	vector<std::string> texturePaths;
 	UINT imageIndex; //this shouldn't have to be a class var, but here we are.
 
-	//Per mesh stuff
+	//Per mesh stuff. This is all real ugly, I need to refactor it to be like Shader class. As in, make it a child of renderer TODO
 	vector<VkBuffer> vertexBuffers;
 	vector<VkBuffer> indexBuffers;
 	vector<uint> indicesSize; //number of indices for each mesh
+	vector<uint> shaderIndices; //Maps mesh index to shader index
+
 
 	vector<VkDescriptorPool> descriptorPools; //Set of descriptor pools. One pool per mesh. Props could push these to mesh local
 	vector<vector<VkDescriptorSet>> descriptorSets; //2d vector of descriptor sets, first dimension is per mesh, second is per frame
 	uint maxDescriptors = 20;//the maximum number of descriptor SETS the renderer can support. Set before init. Used to initialize the pool
 
-
+	vector<Shader> shaders;
 
 	//ushort swappingFrame = UINT16_MAX; //used in swapDescriptorSets
 	//ushort swapIndices[2] = { 0,0 }; Might need later
@@ -202,25 +205,7 @@ public:
 	}
 
 	void createPipeline() {
-		auto vertShaderCode = readFile("Shaders/vert.spv");
-		auto fragShaderCode = readFile("Shaders/frag.spv");
 
-		VkShaderModule vertShaderModule = createShaderModule(vertShaderCode);
-		VkShaderModule fragShaderModule = createShaderModule(fragShaderCode);
-
-		VkPipelineShaderStageCreateInfo vertShaderStageInfo = {};
-		vertShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-		vertShaderStageInfo.stage = VK_SHADER_STAGE_VERTEX_BIT;
-		vertShaderStageInfo.module = vertShaderModule;
-		vertShaderStageInfo.pName = "main";
-
-		VkPipelineShaderStageCreateInfo fragShaderStageInfo = {};
-		fragShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-		fragShaderStageInfo.stage = VK_SHADER_STAGE_FRAGMENT_BIT;
-		fragShaderStageInfo.module = fragShaderModule;
-		fragShaderStageInfo.pName = "main";
-
-		VkPipelineShaderStageCreateInfo shaderStages[] = { vertShaderStageInfo, fragShaderStageInfo };
 
 		auto bindingDescription = Vertex::getBindingDesription();
 		auto attributeDescriptions = Vertex::getAttributeDescriptions();
@@ -271,7 +256,7 @@ public:
 
 		VkPipelineColorBlendAttachmentState colorBlendAttachment = {};
 		colorBlendAttachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
-		colorBlendAttachment.blendEnable = 0;
+		colorBlendAttachment.blendEnable = 0; //The texutres used for the nanosuit are fucky. Have a big alpha component. Need to be not blended.
 		colorBlendAttachment.srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
 		colorBlendAttachment.dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
 		colorBlendAttachment.colorBlendOp = VK_BLEND_OP_ADD;
@@ -320,7 +305,6 @@ public:
 		VkGraphicsPipelineCreateInfo pipelineInfo = {};
 		pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
 		pipelineInfo.stageCount = 2;
-		pipelineInfo.pStages = shaderStages;
 		pipelineInfo.pVertexInputState = &vertexInputInfo;
 		pipelineInfo.pInputAssemblyState = &inputAssembly;
 		pipelineInfo.pViewportState = &viewportState;
@@ -332,14 +316,19 @@ public:
 		pipelineInfo.layout = pipelineLayout;
 		pipelineInfo.renderPass = renderPass;
 		pipelineInfo.subpass = 0;
+		if (graphicsPipelines.size() < shaders.size()){
+			graphicsPipelines.resize(shaders.size());
+		}
+		for (int i = 0; i < shaders.size(); i++) {
+			pipelineInfo.pStages = shaders[i].shaderStages;
 
-		res = vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &pipelineInfo, NULL, &graphicsPipeline);
-		assert(res == VK_SUCCESS);
 
+			res = vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &pipelineInfo, NULL, &graphicsPipelines[i]);
+			assert(res == VK_SUCCESS);
 
-
-		vkDestroyShaderModule(device, fragShaderModule, NULL);
-		vkDestroyShaderModule(device, vertShaderModule, NULL);
+			//vkDestroyShaderModule(device, fragShaderModule, NULL);
+			//vkDestroyShaderModule(device, vertShaderModule, NULL);
+		}
 	}
 
 	void createRenderPass() {
@@ -856,27 +845,26 @@ public:
 			renderPassInfo.pClearValues = clearValues.data();
 			vkCmdBeginRenderPass(commandBuffers[i], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
 
-
-			//I think to use multiple shaders, I'll have to bind multiple pipelines
-			vkCmdBindPipeline(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline);
+			for (int j = 0; j < shaders.size(); j++){
+				//I think to use multiple shaders, I'll have to bind multiple pipelines
+				vkCmdBindPipeline(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipelines[j]);
 			
+				for (int k = 0; k < descriptorSets.size(); k++) { //Now to draw the actual meshes
+					if (shaderIndices[k] == j) { //Is this mesh set to this shader?
+						VkDeviceSize offsets[] = { 0 };
+						VkBuffer vertexBufferArray[] = { vertexBuffers[k] };
+						vkCmdBindVertexBuffers(commandBuffers[i], 0, 1, vertexBufferArray, offsets);
+						vkCmdBindIndexBuffer(commandBuffers[i], indexBuffers[k], 0, VK_INDEX_TYPE_UINT32);
+						vkCmdBindDescriptorSets(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &descriptorSets[k][i], 0, NULL);
+						vkCmdDrawIndexed(commandBuffers[i], indicesSize[k], 1, 0, 0, 0);
+					}
+				}
+				vkCmdEndRenderPass(commandBuffers[i]);
 
-			for (int j = 0; j < descriptorSets.size(); j++) { //Now to draw the actual meshes
-				
+				res = vkEndCommandBuffer(commandBuffers[i]);
+				assres;
 
-				VkDeviceSize offsets[] = { 0 };
-				VkBuffer vertexBufferArray[] = { vertexBuffers[j]};
-				vkCmdBindVertexBuffers(commandBuffers[i], 0, 1, vertexBufferArray, offsets);
-				vkCmdBindIndexBuffer(commandBuffers[i], indexBuffers[j], 0, VK_INDEX_TYPE_UINT32);
-				vkCmdBindDescriptorSets(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &descriptorSets[j][i], 0, NULL);
-				vkCmdDrawIndexed(commandBuffers[i], indicesSize[j], 1, 0, 0, 0);
 			}
-			vkCmdEndRenderPass(commandBuffers[i]);
-
-			res = vkEndCommandBuffer(commandBuffers[i]);
-			assres;
-
-
 		}
 	}
 
@@ -1110,7 +1098,7 @@ public:
 		}
 	}
 
-	void initVulkan() {
+	void initVulkan() { //Part one of setting up vulkan. Create shaders after calling this function
 		initWindow();
 		initInstance();
 		createSurface();
@@ -1119,15 +1107,14 @@ public:
 		createSwapchain();
 		createRenderPass();
 		createDescriptorSetLayout();
+	}
+	void layThePipe() {//Yes. I named it that. I have fallen that far. 
+			//Anyway this is called after shaders are created, but before meshes
 		createPipeline();
 		createCommandPool();
 		createDepthResources();
-		createFramebuffers(); //textures are handled differently so I can have multiple of them
+		createFramebuffers(); 
 		createTextureSampler();
-
-		//createVertexBuffer();
-		//createIndexBuffer();
-		//createUniformBuffers();
 		createDescriptorPool();
 	}
 	void finalizeVulkan() {
@@ -1138,7 +1125,7 @@ public:
 	void cleanupSwapchain() {
 		for (auto framebuffer : swapchainFramebuffers) { vkDestroyFramebuffer(device, framebuffer, NULL); }
 		vkFreeCommandBuffers(device, commandPool, static_cast<UINT>(commandBuffers.size()), commandBuffers.data());
-		vkDestroyPipeline(device, graphicsPipeline, NULL);
+		//vkDestroyPipeline(device, graphicsPipeline, NULL);
 		vkDestroyPipelineLayout(device, pipelineLayout, NULL);
 		vkDestroyRenderPass(device, renderPass, NULL);
 

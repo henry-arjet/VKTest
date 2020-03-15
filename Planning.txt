@@ -3,3 +3,6 @@ then apply those structs on createCommandBuffers. Then I'll give each of those s
 to them. When calling createCommandBuffers, I'll do a for loop for every frame in the swapchain, then a for loop
 for every shader, and then a for loop for every mesh in that shader. This will mean I will have to assign shaders before creating
 the command buffers.
+
+Make a struct called Shader Data. Have the shader object push to a vector of shaderDatas. That way, renderer can get info from 
+the shaders, and call them from a list, without actually having the shader class
