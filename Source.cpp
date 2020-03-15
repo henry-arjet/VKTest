@@ -109,7 +109,6 @@ void loop(Renderer &renderer){
 		meshes[1].position = vec3(glm::cos(now), glm::sin(now), 0);
 		for (int j = 0; j < models[0].meshes.size(); j++) {
 			models[0].meshes[j].ubo.view = mainCamera.GetViewMatrix();
-			models[0].meshes[j].position = vec3(0, 0, 0);
 		}
 
 
@@ -127,20 +126,19 @@ int main() {
 	renderer.initVulkan();
 	//Do shaders
 	renderer.shaders.push_back(Shader("Shaders/vert.spv", "Shaders/frag.spv", 0, renderer.device));
-	   
+	renderer.shaders.push_back(Shader("Shaders/lightV.spv", "Shaders/lightF.spv", 1, renderer.device));
 	renderer.layThePipe(); //I should change the shader to have an init function called from createPipeline so I don't have to split it up like this
 	//On that note I should do the same with meshes
 
 	//Texture stuff. Temporary. I could burn this whole thing down, but I'll keep it just for debugging.
-	int texturePathsSize = 2;
-	renderer.texturePaths = { "chalet.jpg", "sample_texture.jpg" };
+	int texturePathsSize = 1;
+	renderer.texturePaths = {"sample_texture.jpg" };
 	renderer.textureImages.resize(texturePathsSize);
 	renderer.textureImageMemory.resize(texturePathsSize);
 	renderer.textureImageViews.resize(texturePathsSize);
-	renderer.createTextureImage(0, "chalet.jpg");
-	renderer.createTextureImage(1, "sample_texture.jpg");
+	renderer.createTextureImage(0, "sample_texture.jpg");
 
-	textureCounter = 2;
+	textureCounter = 1;
 	meshCounter = 2;
 
 
@@ -148,24 +146,21 @@ int main() {
 	meshes.push_back(Mesh(renderer));
 
 
-	meshes[0].textures.resize(1);
+	meshes[0].textures.resize(1);//initializes with default texture and indexes, all 0
 	meshes[1].textures.resize(1);
-	meshes[1].textures[0].texIndex = 1;
-
 	meshes[1].index = 1;
-	meshes[1].texIndex = 1;
-
-
+	meshes[0].shaderIndex = 1;
 
 	models.push_back(Model(renderer, "models/nanosuit/scene.fbx", meshCounter, textureCounter));
 
 	meshes[0].init();
 	meshes[1].init();
-
 	for (int j = 0; j < models[0].meshes.size(); j++) {
 		models[0].meshes[j].scale = vec3(0.1f, 0.1f, 0.1f);
 		models[0].meshes[j].init();
+		models[0].meshes[j].position = vec3(0.0f, 0.0f, -0.5f);
 	}
+
 	renderer.finalizeVulkan();
 
 	mainCamera = Camera();

@@ -859,12 +859,12 @@ public:
 						vkCmdDrawIndexed(commandBuffers[i], indicesSize[k], 1, 0, 0, 0);
 					}
 				}
-				vkCmdEndRenderPass(commandBuffers[i]);
-
-				res = vkEndCommandBuffer(commandBuffers[i]);
-				assres;
-
 			}
+
+			vkCmdEndRenderPass(commandBuffers[i]);
+			res = vkEndCommandBuffer(commandBuffers[i]);
+			assres;
+
 		}
 	}
 

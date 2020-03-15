@@ -44,7 +44,7 @@ public:
 	vector<VkBuffer> uniformBuffers;
 	vector<VkDeviceMemory> uniformBuffersMemory;
 	vec3 position; //Should be in object, but yolo
-	vec3 scale = vec3(1.0f, 1.0f, 1.0f);
+	vec3 scale = vec3(0.3f, 0.3f, 0.3f);
 
 
 	//I should have it so that each mesh will load its data and hand it off to the renderer, but not before checking if the renderer already has the data
