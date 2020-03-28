@@ -1,8 +1,12 @@
-I need to add a method for switching shaders. I think I'll create a struct of shader/pipeline information, 
-then apply those structs on createCommandBuffers. Then I'll give each of those shader infos a list of meshes that are bound
-to them. When calling createCommandBuffers, I'll do a for loop for every frame in the swapchain, then a for loop
-for every shader, and then a for loop for every mesh in that shader. This will mean I will have to assign shaders before creating
-the command buffers.
+I'm trying to make mesh independent from renderer. I have a list of dependancies and solutions
 
-Make a struct called Shader Data. Have the shader object push to a vector of shaderDatas. That way, renderer can get info from 
-the shaders, and call them from a list, without actually having the shader class
+UBO - Class - Create own .h, used by both renderer.h and mesh.h
+Descriptor Pools - Data - pass in call to createDescriptorSets
+createBuffer and copyBuffer - Switch functionality of createVertexBuffer and IndexBuffer to renderer
+swapchain images.size - Data - pass in call to createUniformBuffers and createDescriptorSets
+Texture Sampler & textureImageViews - Data - pass in call to CDS
+Swapchain Extent - Data - pass in call to updateUniformBuffer
+
+Current plan is to have an overarching master object that has functions like
+createCommandBuffer, and holds the meshes and shaders (or at least references to the meshes),
+as well as the renderer (which has been stripped of some functions)

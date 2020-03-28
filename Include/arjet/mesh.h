@@ -61,7 +61,6 @@ public:
 		this->textures = textures;
 	}
 
-	//void createVertexBuffer() {}
 	void init() {
 		createVertexBuffer();
 		createIndexBuffer();
@@ -70,7 +69,7 @@ public:
 		pushMesh();
 	}
 
-	void createVertexBuffer() {
+	void createVertexBuffer() {//creates a VK vertex buffer from the vertices data it has
 		VkDeviceSize bufferSize = sizeof(vertices[0]) * vertices.size();
 		VkBuffer stagingBuffer;
 		VkDeviceMemory stagingBufferMemory;

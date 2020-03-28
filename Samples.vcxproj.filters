@@ -56,5 +56,8 @@
     <ClInclude Include="Include\arjet\light.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Include\arjet\UBO.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

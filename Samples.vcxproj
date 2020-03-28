@@ -34,6 +34,7 @@
     <ClInclude Include="Include\arjet\model.h" />
     <ClInclude Include="Include\arjet\renderer.h" />
     <ClInclude Include="Include\arjet\shader.h" />
+    <ClInclude Include="Include\arjet\UBO.h" />
     <ClInclude Include="Include\arjet\vertex.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">

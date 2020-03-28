@@ -41,7 +41,7 @@ vector<Light> lights;
 
 
 
-void loop(Renderer &renderer){
+void loop(RenderController &renderController){
 	bool stillRunning = true;
 	while (stillRunning) {
 		//first calculate delta time
@@ -61,7 +61,7 @@ void loop(Renderer &renderer){
 			case SDL_WINDOWEVENT:
 				switch (event.window.event) {
 				case SDL_WINDOWEVENT_RESIZED:
-					renderer.framebufferResized = true;
+					renderController.renderer.framebufferResized = true;
 					break;
 				default:
 					break;
@@ -95,7 +95,7 @@ void loop(Renderer &renderer){
 			else {
 				mouseMode = true;
 				SDL_ShowCursor(0);
-				SDL_WarpMouseInWindow(renderer.window, 50, 50); //for some reason this doesn't work
+				SDL_WarpMouseInWindow(renderController.renderer.window, 50, 50); //for some reason this doesn't work
 
 			}
 		}
@@ -104,7 +104,7 @@ void loop(Renderer &renderer){
 			int yoff;
 			SDL_GetMouseState(&xoff, &yoff);
 			mainCamera.ProcessMouseMovement(xoff - 50, -1 * yoff + 50);
-			SDL_WarpMouseInWindow(renderer.window, 50, 50);
+			SDL_WarpMouseInWindow(renderController.renderer.window, 50, 50);
 		}
 		//End of input
 		meshes[0].ubo.view = mainCamera.GetViewMatrix(); //still light mesh
@@ -120,38 +120,33 @@ void loop(Renderer &renderer){
 			models[0].meshes[j].ubo.lights[0] = lights[0].info;
 		}
 		//cout << meshes[1].ubo.lights[0].strength << endl; 
-		renderer.startFrame();
-		meshes[0].updateUniformBuffer(renderer.currentFrame);
-		meshes[1].updateUniformBuffer(renderer.currentFrame);
+		renderController.renderer.startFrame();
+		meshes[0].updateUniformBuffer(renderController.renderer.currentFrame);
+		meshes[1].updateUniformBuffer(renderController.renderer.currentFrame);
 		for (int j = 0; j < models[0].meshes.size(); j++) {
-			models[0].meshes[j].updateUniformBuffer(renderer.currentFrame);
+			models[0].meshes[j].updateUniformBuffer(renderController.renderer.currentFrame);
 		}
-		renderer.finishFrame();
+		renderController.renderer.finishFrame();
 	}
 }
 int main() {
-	Renderer renderer;
-	renderer.initVulkan();
-	//Do shaders
-	renderer.shaders.push_back(Shader("Shaders/vert.spv", "Shaders/frag.spv", 0, renderer.device));
-	renderer.shaders.push_back(Shader("Shaders/lightV.spv", "Shaders/lightF.spv", 1, renderer.device));
-	renderer.layThePipe(); //I should change the shader to have an init function called from createPipeline so I don't have to split it up like this
-	//On that note I should do the same with meshes
+	RenderController renderController;
+	renderController.init();
 
 	//Texture stuff. Temporary. I could burn this whole thing down, but I'll keep it just for debugging.
 	int texturePathsSize = 1;
-	renderer.texturePaths = {"sample_texture.jpg" };
-	renderer.textureImages.resize(texturePathsSize);
-	renderer.textureImageMemory.resize(texturePathsSize);
-	renderer.textureImageViews.resize(texturePathsSize);
-	renderer.createTextureImage(0, "sample_texture.jpg");
+	renderController.renderer.texturePaths = {"sample_texture.jpg" };
+	renderController.renderer.textureImages.resize(texturePathsSize);
+	renderController.renderer.textureImageMemory.resize(texturePathsSize);
+	renderController.renderer.textureImageViews.resize(texturePathsSize);
+	renderController.renderer.createTextureImage(0, "sample_texture.jpg");
 
 	textureCounter = 1;
 	meshCounter = 2;
 
 
-	meshes.push_back(Mesh(renderer));//mesh 0
-	meshes.push_back(Mesh(renderer));
+	meshes.push_back(Mesh(renderController.renderer));//mesh 0
+	meshes.push_back(Mesh(renderController.renderer));
 	lights.push_back(Light(meshes[0])); //creates a light, assigns it mesh 0
 	lights[0].info.inUse = true; //Says to the frag shader that we're actually using this light
 	lights[0].info.strength = 1.0f;
@@ -160,7 +155,7 @@ int main() {
 	meshes[1].index = 1;
 	meshes[0].shaderIndex = 1; //Use light source shader (hardcoded white)
 
-	models.push_back(Model(renderer, "models/nanosuit/scene.fbx", meshCounter, textureCounter));
+	models.push_back(Model(renderController.renderer, "models/nanosuit/scene.fbx", meshCounter, textureCounter));
 
 	meshes[0].init();
 	meshes[1].init();
@@ -170,12 +165,12 @@ int main() {
 		models[0].meshes[j].position = vec3(0.0f, 0.0f, -0.5f);
 	}
 
-	renderer.finalizeVulkan();
+	renderController.finalizeVulkan();
 
 	mainCamera = Camera();
 	startTime = SDL_GetPerformanceCounter();
 	SDL_ShowCursor(0);
-	loop(renderer);
+	loop(renderController);
 	//renderer.cleanup();
 	return 0;
 }
