@@ -59,5 +59,8 @@
     <ClInclude Include="Include\arjet\UBO.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Include\arjet\renderController.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

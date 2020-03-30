@@ -1,6 +1,7 @@
 //Adapted from Vulkan-Tutorial
 //Henry Arjet, 2020
 
+#include <arjet/renderController.h>
 #include <arjet/renderer.h>
 #include <arjet/camera.h>
 #include <arjet/shader.h>
