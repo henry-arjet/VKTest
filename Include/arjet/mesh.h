@@ -35,7 +35,7 @@ public:
 	uint index = 0; //This is how it will keep track of where it is in the arrays in renderer
 	uint texIndex = 0;
 	uint shaderIndex = 0;
-	vector<VkDescriptorSet> descriptorSets; //Local. One for each frame
+	VkDescriptorSet descriptorSets[2]; //Local. One for each frame
 	VkBuffer vertexBuffer;
 	VkDeviceMemory vertexBufferMemory;
 	VkBuffer indexBuffer;
@@ -62,7 +62,7 @@ public:
 		createIndexBuffer();
 		createUniformBuffers();
 		createDescriptorSets();
-		pushMesh();
+		//pushMesh();
 	}
 
 	void createVertexBuffer() {//creates a VK vertex buffer from the vertices data it has
@@ -71,20 +71,16 @@ public:
 		VkDeviceMemory stagingBufferMemory;
 		renderer.createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
 
-
-
 		void* data;
 		vkMapMemory(renderer.device, stagingBufferMemory, 0, bufferSize, 0, &data);
 		memcpy(data, vertices.data(), (size_t)bufferSize);
 		vkUnmapMemory(renderer.device, stagingBufferMemory);
-
 
 		renderer.createBuffer(bufferSize, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, vertexBuffer, vertexBufferMemory);
 		renderer.copyBuffer(stagingBuffer, vertexBuffer, bufferSize);
 
 		vkDestroyBuffer(renderer.device, stagingBuffer, NULL);
 		vkFreeMemory(renderer.device, stagingBufferMemory, NULL);
-
 	}
 
 	void createIndexBuffer() {
@@ -127,8 +123,8 @@ public:
 		allocInfo.descriptorSetCount = static_cast<uint>(s);
 		allocInfo.pSetLayouts = layouts.data();
 
-		descriptorSets.resize(s); //Local. One for each frame
-		VkResult res = vkAllocateDescriptorSets(renderer.device, &allocInfo, descriptorSets.data());
+		//descriptorSets.resize(s); //Local. One for each frame
+		VkResult res = vkAllocateDescriptorSets(renderer.device, &allocInfo, descriptorSets);
 		assres;
 
 		for (uint i = 0; i < s; i++) {
@@ -150,7 +146,7 @@ public:
 			VkDescriptorImageInfo imageInfo = {};
 
 			imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-			cout << "Applying texture from " << textures[0].path << endl;
+			//cout << "Applying texture from " << textures[0].path << endl;
 			imageInfo.imageView = renderer.textureImageViews[textures[0].texIndex ]; //Should do it like this so I don't have copies of the same texture. 
 			imageInfo.sampler = renderer.textureSampler; //the default texture sampler we set up in the Renderer class
 
@@ -191,7 +187,7 @@ public:
 		if (renderer.descriptorSets.size() <= index) {
 			renderer.descriptorSets.resize(index + 1);
 		}
-		renderer.descriptorSets[index] = descriptorSets;
+		//renderer.descriptorSets[index] = descriptorSets;
 		
 		if (renderer.vertexBuffers.size() <= index) {
 			renderer.vertexBuffers.resize(index + 1);
@@ -213,6 +209,15 @@ public:
 		}renderer.shaderIndices[index] = shaderIndex;
 
 	}
+
+	vector<uint> indices = { //must be public so I can get the size of it
+		0,  1,  2,  2,  3,  0,
+		4,  5,  6,  6,  7,  4,
+		8,  9,  10, 10, 11, 8,
+		12, 13, 14, 14, 15, 12,
+		16, 17, 18, 18, 19, 16,
+		20, 21, 22, 22, 23, 20,
+	};
 	private:
 		vector<Vertex> vertices = {
 			{{-0.5f, -0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}, {1.0f, 1.0f}, {0.0f, 0.0f, 0.0f}}, //0  bl  FRONT
@@ -249,14 +254,6 @@ public:
 			{{-0.5f,  0.5f, -0.5f}, {-1.0f,  0.0f, 0.0f}, {0.0f, 0.0f}}, //22
 			{{-0.5f,  0.5f,  0.5f}, {-1.0f,  0.0f, 0.0f}, {1.0f, 0.0f}}, //23
 
-		};
-		vector<uint> indices = {
-			0,  1,  2,  2,  3,  0,
-			4,  5,  6,  6,  7,  4,
-			8,  9,  10, 10, 11, 8,
-			12, 13, 14, 14, 15, 12,
-			16, 17, 18, 18, 19, 16,
-			20, 21, 22, 22, 23, 20,
 		};
 
 	//VkCommandBuffer localBuffer; //command buffer, Should just need one as the per frame commands will be handled by renderer

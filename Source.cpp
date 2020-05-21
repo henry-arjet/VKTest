@@ -166,6 +166,15 @@ int main() {
 		models[0].meshes[j].position = vec3(0.0f, 0.0f, -0.5f);
 	}
 
+
+	for (Mesh mesh : meshes) {
+		cout << mesh.textures.size() << endl;
+		//mesh.texIndex = mesh.descriptorSets.size(); // FIXME
+		renderController.meshes.push_back(&mesh);
+		//cout << renderController.meshes[0]->descriptorSets.size() << endl;
+	}
+
+
 	renderController.finalizeVulkan();
 
 	mainCamera = Camera();

@@ -1,7 +1,7 @@
 #pragma once
 
 //This object handles all the rendering related tasks. 
-//It has a Renderer object, and (right now) a vector of &Meshes
+//It has a Renderer object, and (right now) a vector of Mesh *s
 
 //depth is -1 - 1 in GL and 0 - 1 in VK 
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
@@ -41,7 +41,7 @@ class RenderController {
 public:
 	Renderer renderer;
 	VkResult res;
-	vector<std::reference_wrapper<Mesh>> meshes;
+	vector<Mesh*> meshes;
 	RenderController(int width = 1600, int height = 900) : renderer(Renderer(width, height)) {
 	}
 
@@ -121,29 +121,26 @@ public:
 			renderPassInfo.clearValueCount = scuint(clearValues.size());
 			renderPassInfo.pClearValues = clearValues.data();
 			vkCmdBeginRenderPass(renderer.commandBuffers[i], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
-			for (int j = 0; j < renderer.shaders.size(); j++) { //TODO switch this logic to controller based on list of meshes
-				//I think to use multiple shaders, I'll have to bind multiple pipelines
+			for (int j = 0; j < renderer.shaders.size(); j++) {				
 				vkCmdBindPipeline(renderer.commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, renderer.graphicsPipelines[j]);
-				cout << renderer.descriptorSets.size() << endl;
 
-				for (int k = 0; k < renderer.descriptorSets.size(); k++) { //Now to draw the actual meshes
+				for (int k = 0; k < meshes.size(); k++) { //For each mesh
 
-					if (renderer.shaderIndices[k] == j) { //Is this mesh set to this shader?
+					if (meshes[k]->shaderIndex == j) { //Is this mesh set to this shader?
+						cout << "indices.size = " << meshes[k]->indices.size() << endl;
 						VkDeviceSize offsets[] = { 0 };
-						VkBuffer vertexBufferArray[] = { renderer.vertexBuffers[k] };
+						VkBuffer vertexBufferArray[] = { meshes[k]->vertexBuffer };
 						vkCmdBindVertexBuffers(renderer.commandBuffers[i], 0, 1, vertexBufferArray, offsets);
-						vkCmdBindIndexBuffer(renderer.commandBuffers[i], renderer.indexBuffers[k], 0, VK_INDEX_TYPE_UINT32);
-						vkCmdBindDescriptorSets(renderer.commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, renderer.pipelineLayout, 0, 1, &renderer.descriptorSets[k][i], 0, NULL);
-						vkCmdDrawIndexed(renderer.commandBuffers[i], renderer.indicesSize[k], 1, 0, 0, 0);
+						vkCmdBindIndexBuffer(renderer.commandBuffers[i], meshes[k]->indexBuffer, 0, VK_INDEX_TYPE_UINT32);
+						vkCmdBindDescriptorSets(renderer.commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, renderer.pipelineLayout, 0, 1, &meshes[k]->descriptorSets[i], 0, NULL);
+						vkCmdDrawIndexed(renderer.commandBuffers[i], 36, 1, 0, 0, 0);
+						//vkCmdDrawIndexed(renderer.commandBuffers[i], meshes[k]->indices.size(), 1, 0, 0, 0);
 					}
 				}
 			}
-
 			vkCmdEndRenderPass(renderer.commandBuffers[i]);
 			res = vkEndCommandBuffer(renderer.commandBuffers[i]);
 			assres;
-
 		}
-
 	}
 };
