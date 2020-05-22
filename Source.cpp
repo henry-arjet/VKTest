@@ -171,9 +171,14 @@ int main() {
 
 
 	for (int i = 0; i < meshes.size(); i++) {
-		cout << meshes[i].textures.size() << endl;
+		//cout << meshes[i].textures.size() << endl;
 		//mesh.texIndex = mesh.descriptorSets.size(); // FIXME
 		renderController.meshes.push_back(&(meshes[i]));
+	}
+	for (int i = 0; i < models.size(); i++) {
+		for (int j = 0; j < models[i].meshes.size(); j++) {
+			renderController.meshes.push_back(&(models[i].meshes[j]));
+		}
 	}
 
 
