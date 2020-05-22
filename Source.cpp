@@ -108,6 +108,8 @@ void loop(RenderController &renderController){
 			SDL_WarpMouseInWindow(renderController.renderer.window, 50, 50);
 		}
 		//End of input
+
+		//Now lets do actual rendering stuff
 		meshes[0].ubo.view = mainCamera.GetViewMatrix(); //still light mesh
 		lights[0].updatePositions (vec3(0, -1*glm::sin(now) + 0.6f, glm::cos(now) - 0.3f));
 		meshes[1].ubo.view = mainCamera.GetViewMatrix();
@@ -146,7 +148,7 @@ int main() {
 	meshCounter = 2;
 
 
-	meshes.push_back(Mesh(renderController.renderer));//mesh 0
+	meshes.push_back(Mesh(renderController.renderer));//mesh 0, the light
 	meshes.push_back(Mesh(renderController.renderer));
 	lights.push_back(Light(meshes[0])); //creates a light, assigns it mesh 0
 	lights[0].info.inUse = true; //Says to the frag shader that we're actually using this light
@@ -155,24 +157,25 @@ int main() {
 	meshes[1].textures.resize(1);
 	meshes[1].index = 1;
 	meshes[0].shaderIndex = 1; //Use light source shader (hardcoded white)
+	//meshes[0].shaderIndex = 1; //Use light source shader (hardcoded white)
 
 	models.push_back(Model(renderController.renderer, "models/nanosuit/scene.fbx", meshCounter, textureCounter));
 
 	meshes[0].init();
 	meshes[1].init();
-	for (int j = 0; j < models[0].meshes.size(); j++) {
+	for (int j = 0; j < models[0].meshes.size(); j++) { //code to scale, position, and initialize the nanosuit
 		models[0].meshes[j].scale = vec3(0.1f, 0.1f, 0.1f);
 		models[0].meshes[j].init();
 		models[0].meshes[j].position = vec3(0.0f, 0.0f, -0.5f);
 	}
 
 
-	for (Mesh mesh : meshes) {
-		cout << mesh.textures.size() << endl;
+	for (int i = 0; i < meshes.size(); i++) {
+		cout << meshes[i].textures.size() << endl;
 		//mesh.texIndex = mesh.descriptorSets.size(); // FIXME
-		renderController.meshes.push_back(&mesh);
-		//cout << renderController.meshes[0]->descriptorSets.size() << endl;
+		renderController.meshes.push_back(&(meshes[i]));
 	}
+
 
 
 	renderController.finalizeVulkan();

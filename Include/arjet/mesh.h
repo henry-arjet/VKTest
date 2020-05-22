@@ -45,7 +45,7 @@ public:
 	vector<VkDeviceMemory> uniformBuffersMemory;
 	vec3 position; //Should be in object, but yolo
 	vec3 scale = vec3(0.3f, 0.3f, 0.3f);
-	
+	uint indicesSize = 3; //This should not have to exist, but function calls from pointer don't seem to be working
 	//Functions
 	
 	Mesh(Renderer& renderer) : renderer(renderer) {}
@@ -57,12 +57,15 @@ public:
 		this->textures = textures;
 	}
 
+	
+
 	void init() {
 		createVertexBuffer();
 		createIndexBuffer();
 		createUniformBuffers();
 		createDescriptorSets();
 		//pushMesh();
+		indicesSize = indices.size(); //Again, shouldn't exist
 	}
 
 	void createVertexBuffer() {//creates a VK vertex buffer from the vertices data it has

@@ -81,8 +81,8 @@ public:
 		renderer.createTextureSampler();
 		renderer.createDescriptorPool();
 	}
-	void finalizeVulkan() {
-		createCommandBuffers(); //I need to have the descriptor sets from the objects ready before I can process these functions
+	void finalizeVulkan() { //I need to have the descriptor sets from the objects ready before I can process these functions
+		createCommandBuffers(); 
 		renderer.createSyncObjects();
 	}
 
@@ -121,20 +121,23 @@ public:
 			renderPassInfo.clearValueCount = scuint(clearValues.size());
 			renderPassInfo.pClearValues = clearValues.data();
 			vkCmdBeginRenderPass(renderer.commandBuffers[i], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
-			for (int j = 0; j < renderer.shaders.size(); j++) {				
-				vkCmdBindPipeline(renderer.commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, renderer.graphicsPipelines[j]);
+			cout << "Shaders.size = " << renderer.shaders.size() << endl;
 
+			for (int j = 0; j < renderer.shaders.size(); j++) {	
+				cout << "Checking shader " << j << endl;
+				vkCmdBindPipeline(renderer.commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, renderer.graphicsPipelines[j]);
 				for (int k = 0; k < meshes.size(); k++) { //For each mesh
+					cout << "Meshes[" << k << "].shaderIndex = " << meshes[k]->shaderIndex << endl;
 
 					if (meshes[k]->shaderIndex == j) { //Is this mesh set to this shader?
-						cout << "indices.size = " << meshes[k]->indices.size() << endl;
+						cout << "Drawing mesh " << k << " and shader " << j << endl;
 						VkDeviceSize offsets[] = { 0 };
 						VkBuffer vertexBufferArray[] = { meshes[k]->vertexBuffer };
 						vkCmdBindVertexBuffers(renderer.commandBuffers[i], 0, 1, vertexBufferArray, offsets);
 						vkCmdBindIndexBuffer(renderer.commandBuffers[i], meshes[k]->indexBuffer, 0, VK_INDEX_TYPE_UINT32);
 						vkCmdBindDescriptorSets(renderer.commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, renderer.pipelineLayout, 0, 1, &meshes[k]->descriptorSets[i], 0, NULL);
-						vkCmdDrawIndexed(renderer.commandBuffers[i], 36, 1, 0, 0, 0);
-						//vkCmdDrawIndexed(renderer.commandBuffers[i], meshes[k]->indices.size(), 1, 0, 0, 0);
+						vkCmdDrawIndexed(renderer.commandBuffers[i], meshes[k]->indicesSize, 1, 0, 0, 0);
+
 					}
 				}
 			}
