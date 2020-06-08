@@ -117,12 +117,12 @@ void loop(RenderController &renderController){
 		for (int j = 0; j < models[0].meshes.size(); j++) {
 			models[0].meshes[j].ubo.view = mainCamera.GetViewMatrix();
 		}
-
 		meshes[1].ubo.lights[0] = lights[0].info;
+
 		for (int j = 0; j < models[0].meshes.size(); j++) {
 			models[0].meshes[j].ubo.lights[0] = lights[0].info;
 		}
-		//cout << meshes[1].ubo.lights[0].strength << endl; 
+		
 		renderController.renderer.startFrame();
 		meshes[0].updateUniformBuffer(renderController.renderer.currentFrame);
 		meshes[1].updateUniformBuffer(renderController.renderer.currentFrame);

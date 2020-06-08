@@ -176,14 +176,15 @@ public:
 
 		ubo.proj = glm::perspective(glm::radians(70.0f), renderer.swapchainExtent.width / (float)renderer.swapchainExtent.height, 0.02f, 100.0f); //TODO move to init function
 		ubo.proj[1][1] *= -1;
-
-		ubo.normalMatrix = mat3(glm::transpose(glm::inverse(ubo.view*ubo.model)));
-
+		
+		ubo.normalMatrix = mat3(glm::transpose(glm::inverse(ubo.model)));
 		void* data;
 
 
 		vkMapMemory(renderer.device, uniformBuffersMemory[currentImage], 0, sizeof(ubo), 0, &data);
 		memcpy(data, &ubo, sizeof(ubo));
+		cout << "Size of ubo: " << sizeof(ubo) << endl;
+
 		vkUnmapMemory(renderer.device, uniformBuffersMemory[currentImage]);
 	}
 	void pushMesh() {

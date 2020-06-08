@@ -7,6 +7,7 @@
 
 //depth is -1 - 1 in GL and 0 - 1 in VK 
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
+#define GLM_FORCE_DEFAULT_ALIGNED_GENTYPES //Doesn't work if I don't do this. Alignment is still mostly a mystery to me.
 
 // Tell SDL not to mess with main()
 #define SDL_MAIN_HANDLED

@@ -12,11 +12,11 @@ using glm::mat4;
 
 
 struct LightInfo {
-	vec3 position;
-	vec3 color = vec3(1.0f, 1.0f, 1.0f);
-	float strength = 1.0f;
-	bool isDirectional = false;
-	bool inUse = false;
+	alignas(16) vec3 position;
+	alignas(16) vec3 color = vec3(1.0f, 1.0f, 1.0f);
+	alignas(4)  float strength = 1.0f;
+	alignas(4)  bool isDirectional = false;
+	alignas(4)  bool inUse = false;
 
 };
 
