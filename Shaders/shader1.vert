@@ -21,6 +21,7 @@ layout(binding = 0) uniform UniformBufferObject {
 	mat4 proj;
 	mat3 normalMatrix;
 	LightInfo infos[4];
+	uint featureFlags;
 } ubo;
 
 

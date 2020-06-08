@@ -27,4 +27,5 @@ struct UniformBufferObject {
 	alignas(16) mat4 proj;
 	alignas(16) mat3 normalMatrix;
 	alignas(16) LightInfo lights[4]; //have to hard code this. At least for now
+	alignas(4) uint featureFlags;
 };

@@ -17,6 +17,7 @@
 #define ushort uint16_t
 #define uint uint32_t
 #define scuint static_cast<uint32_t>
+#define ARJET_SHADER_FLAG_NORMAL 1
 
 #include <arjet/vertex.h>
 #include <arjet/shader.h>

@@ -72,7 +72,8 @@ private:
 		vector<Vertex>vertices;
 		vector<unsigned int> indices;
 		vector<Texture> textures;
-
+		uint flags = 0; //Stores the shader feature flags
+		cout << "flags = " << flags << endl;
 		for (unsigned int i = 0; i < mesh->mNumVertices; i++) {
 			Vertex vertex;
 			//process positions, normals, and texcoords
@@ -120,6 +121,9 @@ private:
 			aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
 			cout << "Unknown textures: " << material->GetTextureCount(aiTextureType_UNKNOWN) << endl;
 			cout << "Diff, spec, and norm/height: " << material->GetTextureCount(aiTextureType_DIFFUSE) << " " << material->GetTextureCount(aiTextureType_SPECULAR) << " " << material->GetTextureCount(aiTextureType_HEIGHT) << " " << endl;
+			if (material->GetTextureCount(aiTextureType_HEIGHT) >0) {
+				flags = flags | ARJET_SHADER_FLAG_NORMAL;
+			} 
 			vector<Texture> diffuseMaps = loadMaterialTextures(material, aiTextureType_DIFFUSE, "texture_diffuse");
 			vector<Texture> specularMaps = loadMaterialTextures(material, aiTextureType_SPECULAR, "texture_specular");
 			vector<Texture> normalMaps = loadMaterialTextures(material, aiTextureType_HEIGHT, "texture_normal");
@@ -130,7 +134,7 @@ private:
 
 
 		}
-		return Mesh(renderer, vertices, indices, textures, meshCounter++);//iterates here
+		return Mesh(renderer, vertices, indices, textures, meshCounter++, flags);//iterates here
 	}
 	vector<Texture> loadMaterialTextures(aiMaterial *mat, aiTextureType type, string typeName){
 		vector<Texture> textures;

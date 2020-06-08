@@ -46,15 +46,17 @@ public:
 	vec3 position; //Should be in object, but yolo
 	vec3 scale = vec3(0.3f, 0.3f, 0.3f);
 	uint indicesSize = 3; //This should not have to exist, but function calls from pointer don't seem to be working
+	uint featureFlags = 0; //Tells the shaders which features it supports. E.g. normal maps
 	//Functions
 	
 	Mesh(Renderer& renderer) : renderer(renderer) {}
 	
-	Mesh(Renderer& renderer, vector<Vertex> vertices, vector<uint> indices, vector<Texture> textures, uint index) : renderer(renderer){
+	Mesh(Renderer& renderer, vector<Vertex> vertices, vector<uint> indices, vector<Texture> textures, uint index, uint featureFlags = 0) : renderer(renderer){
 		this->index = index;
 		this->vertices = vertices;
 		this->indices = indices;
 		this->textures = textures;
+		this->featureFlags = featureFlags;
 	}
 
 	
@@ -173,17 +175,16 @@ public:
 		//ubo.model = glm::rotate(mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));//Translate then rotate
 		ubo.model = glm::scale(ubo.model, scale);
 
-
 		ubo.proj = glm::perspective(glm::radians(70.0f), renderer.swapchainExtent.width / (float)renderer.swapchainExtent.height, 0.02f, 100.0f); //TODO move to init function
 		ubo.proj[1][1] *= -1;
 		
 		ubo.normalMatrix = mat3(glm::transpose(glm::inverse(ubo.model)));
+
+		ubo.featureFlags = featureFlags; //TODO move to init
+
 		void* data;
-
-
 		vkMapMemory(renderer.device, uniformBuffersMemory[currentImage], 0, sizeof(ubo), 0, &data);
 		memcpy(data, &ubo, sizeof(ubo));
-		cout << "Size of ubo: " << sizeof(ubo) << endl;
 
 		vkUnmapMemory(renderer.device, uniformBuffersMemory[currentImage]);
 	}
@@ -223,7 +224,7 @@ public:
 		20, 21, 22, 22, 23, 20,
 	};
 	private:
-		vector<Vertex> vertices = {
+		vector<Vertex> vertices = { //defaults to a cube
 			{{-0.5f, -0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}, {1.0f, 1.0f}, {0.0f, 0.0f, 0.0f}}, //0  bl  FRONT
 			{{ 0.5f, -0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}, {0.0f, 1.0f}}, //1  br
 			{{ 0.5f,  0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}, {0.0f, 0.0f}}, //2  tr

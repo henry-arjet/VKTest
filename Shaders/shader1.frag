@@ -1,6 +1,7 @@
 #version 450
 #extension GL_ARB_separate_shader_objects : enable
 
+const uint ARJET_SHADER_FLAG_NORMAL = 1;
 
 layout(location = 0) in vec2 fragTexCoord;
 layout(location = 1) in vec3 normal;
@@ -23,6 +24,7 @@ layout(binding = 0) uniform UniformBufferObject {
 	mat4 proj;
 	mat3 normalMatrix;
 	LightInfo infos[4];
+	uint featureFlags;
 } ubo;
 
 
@@ -32,10 +34,14 @@ void main(){
 	outColor = vec4(0,0,0,0);
 	outColor += texture(texSampler, fragTexCoord) * 0.3; //ambiant light
 	
+
+
 	//Diffuse lighting from point light
 	vec3 norm = normalize(normal);
 	vec3 lightDir = normalize(ubo.infos[0].position - fragPos);
 	float diff = max(dot(norm, lightDir), 0.0);
 	outColor += texture(texSampler, fragTexCoord) * diff*2;
-
+	if ((ubo.featureFlags & ARJET_SHADER_FLAG_NORMAL) != 0){ //Has normal map
+		outColor = vec4(1,0,0,1);
+	}
 }
