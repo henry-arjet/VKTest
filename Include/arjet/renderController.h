@@ -73,7 +73,7 @@ public:
 		renderer.createDescriptorSetLayout();
 	}
 	void layThePipe() {//Yes. I named it that. I have fallen that far. 
-			//Anyway this is called after shaders are created, but before meshes
+					   //Anyway this is called after shaders are created, but before meshes
 		renderer.createPipeline();
 		renderer.createCommandPool();
 		renderer.createDepthResources();

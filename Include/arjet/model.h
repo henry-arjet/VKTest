@@ -154,6 +154,7 @@ private:
 				TextureFromFile(renderer, textureCounter, str.C_Str(), directory);
 				Texture texture;
 				texture.texIndex = textureCounter++; // tc++ so it passes it's value, then itterates. So we don't have the first one as 1, the second as 2, etc.
+				cout << "And storing in index " << texture.texIndex << endl;
 				texture.type = typeName;
 				texture.path = str.C_Str();
 				textures.push_back(texture);
@@ -180,7 +181,7 @@ uint TextureFromFile(Renderer &renderer, uint count, const char *path, const str
 
 	renderer.createTextureImage(count, filename.c_str());
 
-	return count;
+	return count; //I don't think I use this?
 }
 
 

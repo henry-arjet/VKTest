@@ -31,9 +31,9 @@ class Mesh {
 public:
 	//Data
 	Renderer& renderer;
-	vector<Texture> textures; //Not used right now
+	vector<Texture> textures; //Nevermind it is
 	uint index = 0; //This is how it will keep track of where it is in the arrays in renderer
-	uint texIndex = 0;
+	uint texIndex = 0; //Not used?
 	uint shaderIndex = 0;
 	VkDescriptorSet descriptorSets[2]; //Local. One for each frame
 	VkBuffer vertexBuffer;
@@ -148,20 +148,27 @@ public:
 			descriptorWrites[0].pBufferInfo = &bufferInfo;
 
 			//texture
-			VkDescriptorImageInfo imageInfo = {};
+			std::array<VkDescriptorImageInfo, 2> imageInfo = {};
 
-			imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-			//cout << "Applying texture from " << textures[0].path << endl;
-			imageInfo.imageView = renderer.textureImageViews[textures[0].texIndex ]; //Should do it like this so I don't have copies of the same texture. 
-			imageInfo.sampler = renderer.textureSampler; //the default texture sampler we set up in the Renderer class
+			imageInfo[0].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+			imageInfo[0].imageView = renderer.textureImageViews[textures[0].texIndex ]; //Should do it like this so I don't have copies of the same texture. 
+			imageInfo[0].sampler = renderer.textureSampler; //the default texture sampler we set up in the Renderer class
+
+			imageInfo[1].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+			if ((featureFlags & ARJET_SHADER_FLAG_NORMAL) != 0){// checks if mesh has normal
+				imageInfo[1].imageView = renderer.textureImageViews[textures[1].texIndex]; //This one is the normal map
+				cout << "TEST!\n";
+			}
+			else imageInfo[1].imageView = renderer.textureImageViews[0]; //else hands it whatever is texture 0. Doesn't matter
+			imageInfo[1].sampler = renderer.textureSampler; 
 
 			descriptorWrites[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 			descriptorWrites[1].dstSet = descriptorSets[i];
 			descriptorWrites[1].dstBinding = 1;
 			descriptorWrites[1].dstArrayElement = 0;
 			descriptorWrites[1].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-			descriptorWrites[1].descriptorCount = 1;
-			descriptorWrites[1].pImageInfo = &imageInfo;
+			descriptorWrites[1].descriptorCount = 2;
+			descriptorWrites[1].pImageInfo = imageInfo.data();
 
 			vkUpdateDescriptorSets(renderer.device, static_cast<uint>(descriptorWrites.size()), descriptorWrites.data(), 0, NULL);
 		}

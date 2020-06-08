@@ -491,7 +491,7 @@ public:
 			poolSizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
 			poolSizes[0].descriptorCount = static_cast<uint>(swapchainImages.size());
 			poolSizes[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-			poolSizes[1].descriptorCount = static_cast<uint>(swapchainImages.size());
+			poolSizes[1].descriptorCount = static_cast<uint>(swapchainImages.size()*2);
 
 			VkDescriptorPoolCreateInfo poolInfo = {};
 			poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
@@ -740,7 +740,8 @@ public:
 	void createDescriptorSetLayout() {
 		std::array<VkDescriptorSetLayoutBinding, 2> bindings = {};
 
-		//Sets up a simple, reusable descriptor set for a UBO and a single texture
+		//Sets up a simple, reusable descriptor set for a UBO, a diffuse texture, and a normal map
+		//Diffuse and normal stored in an array in binding 1 (the second binding)
 		VkDescriptorSetLayoutBinding uboLayoutBinding = {};
 		bindings[0].binding = 0;
 		bindings[0].descriptorCount = 1;
@@ -749,10 +750,11 @@ public:
 
 
 		bindings[1].binding = 1;
-		bindings[1].descriptorCount = 1;
+		bindings[1].descriptorCount = 2;
 		bindings[1].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
 		bindings[1].stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
 		bindings[1].pImmutableSamplers = NULL;
+
 
 		VkDescriptorSetLayoutCreateInfo layoutInfo = {};
 		layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
