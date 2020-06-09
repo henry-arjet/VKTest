@@ -27,13 +27,16 @@
     <None Include="Shaders\shader1.vert" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="game_object.h" />
     <ClInclude Include="Include\arjet\camera.h" />
+    <ClInclude Include="Include\arjet\component.h" />
     <ClInclude Include="Include\arjet\input.h" />
     <ClInclude Include="Include\arjet\light.h" />
     <ClInclude Include="Include\arjet\mesh.h" />
     <ClInclude Include="Include\arjet\model.h" />
     <ClInclude Include="Include\arjet\renderController.h" />
     <ClInclude Include="Include\arjet\renderer.h" />
+    <ClInclude Include="Include\arjet\script.h" />
     <ClInclude Include="Include\arjet\shader.h" />
     <ClInclude Include="Include\arjet\UBO.h" />
     <ClInclude Include="Include\arjet\vertex.h" />

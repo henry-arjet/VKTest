@@ -62,5 +62,14 @@
     <ClInclude Include="Include\arjet\renderController.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Include\arjet\component.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="game_object.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\arjet\script.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
