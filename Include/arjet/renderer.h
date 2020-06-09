@@ -84,13 +84,18 @@ public:
 	VkRenderPass renderPass;
 	VkDescriptorSetLayout descriptorSetLayout;
 	VkPipelineLayout pipelineLayout;
-	vector<VkPipeline> graphicsPipelines;
+	vector<VkPipeline> graphicsPipelines; //one pipeline for each shader
 	vector<VkImageView> swapchainViews;
 	vector<VkFramebuffer> swapchainFramebuffers;
 	vector<VkImage> swapchainImages;
 	VkCommandPool commandPool;
 	uint queueFamilyIndex; //assumes single graphics/present queue family
-	vector <VkCommandBuffer> commandBuffers;
+	
+	vector <VkCommandBuffer> commandBuffers; //DEPRECIATED
+	VkCommandBuffer startCommandBuffers[2]; //starts the render pass
+	vector<VkCommandBuffer> shaderCommandBuffers; //tells the GPU to switch to a certin shader by index
+	VkCommandBuffer submitCommandBuffers[2];//submits the render pass
+
 	vector<VkSemaphore> imageAvailableSemaphores;
 	vector<VkSemaphore> renderFinishedSemaphores;
 	vector<VkFence> inFlightFences;
@@ -1027,6 +1032,83 @@ public:
 		assert(res == VK_SUCCESS);
 
 
+	}
+
+	void createStartCommands() {
+		VkCommandBufferAllocateInfo cmdInfo = {};
+		cmdInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+		cmdInfo.pNext = NULL;
+		cmdInfo.commandPool = commandPool;
+		cmdInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+		cmdInfo.commandBufferCount = 2;
+		res = vkAllocateCommandBuffers(device, &cmdInfo, startCommandBuffers);
+
+		assres;
+
+		for (UINT i = 0; i < 2; i++) { //two frames in flight, thus hardcode to 2
+
+			VkCommandBufferBeginInfo beginInfo = {};
+			beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+			res = vkBeginCommandBuffer(startCommandBuffers[i], &beginInfo);
+			assres;
+
+			VkRenderPassBeginInfo renderPassInfo = {};
+			renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+			renderPassInfo.renderPass = renderPass;
+			renderPassInfo.framebuffer = swapchainFramebuffers[i];
+			renderPassInfo.renderArea.offset = { 0,0 };
+			renderPassInfo.renderArea.extent = swapchainExtent;
+
+			std::array<VkClearValue, 2> clearValues = {  };
+			clearValues[0].color = { 0.3f, 0.3f, 0.3f, 1.0f };
+			clearValues[1].depthStencil = { 1.0f, 0 };
+			renderPassInfo.clearValueCount = scuint(clearValues.size());
+			renderPassInfo.pClearValues = clearValues.data();
+			vkCmdBeginRenderPass(startCommandBuffers[i], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+			res = vkEndCommandBuffer(startCommandBuffers[i]);
+			assres;
+		}
+	}
+
+	void createShaderCommands() { //super short, only one command
+		uint size = graphicsPipelines.size(); //how many shaders (and thus pipelines) we're working with
+
+		VkCommandBufferAllocateInfo cmdInfo = {};
+		cmdInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+		cmdInfo.pNext = NULL;
+		cmdInfo.commandPool = commandPool;
+		cmdInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+		cmdInfo.commandBufferCount = size;
+		res = vkAllocateCommandBuffers(device, &cmdInfo, shaderCommandBuffers.data());
+
+		for (int i = 0; i < size; i++) {
+			VkCommandBufferBeginInfo beginInfo = {};
+			beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+			res = vkBeginCommandBuffer(shaderCommandBuffers[i], &beginInfo);
+			assres;
+
+			vkCmdBindPipeline(shaderCommandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipelines[i]);
+
+			res = vkEndCommandBuffer(shaderCommandBuffers[i]);
+			assres;
+		}
+	}
+
+	void createSubmitCommands() {
+		VkCommandBufferAllocateInfo cmdInfo = {};
+		cmdInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+		cmdInfo.pNext = NULL;
+		cmdInfo.commandPool = commandPool;
+		cmdInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+		cmdInfo.commandBufferCount = 2;
+		res = vkAllocateCommandBuffers(device, &cmdInfo, submitCommandBuffers);
+
+		assres;
+		for (int i = 0; i < 2; i++) {
+			vkCmdEndRenderPass(submitCommandBuffers[i]);
+			res = vkEndCommandBuffer(submitCommandBuffers[i]);
+			assres;
+		}
 	}
 
 	void cleanup() { //TODO Need to add per mesh cleanup

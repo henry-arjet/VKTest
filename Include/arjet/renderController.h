@@ -146,6 +146,50 @@ public:
 			assres;
 		}
 	}
+
+	VkCommandBuffer * createCommandBuffersModel() { //Should return an array of size 2, one buffer for each frame in flight
+		VkCommandBuffer buffers[2];
+
+		VkCommandBufferAllocateInfo cmdInfo = {};
+		cmdInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+		cmdInfo.pNext = NULL;
+		cmdInfo.commandPool = renderer.commandPool;
+		cmdInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+		cmdInfo.commandBufferCount = 2;
+		res = vkAllocateCommandBuffers(renderer.device, &cmdInfo, buffers);
+
+		assres;
+
+		for (UINT i = 0; i < 2; i++) { //hardcoded to create two command buffers
+
+			VkCommandBufferBeginInfo beginInfo = {};
+			beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+			res = vkBeginCommandBuffer(buffers[i], &beginInfo);
+			assres;
+
+			for (int j = 0; j < renderer.shaders.size(); j++) {
+				vkCmdBindPipeline(renderer.commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, renderer.graphicsPipelines[j]);
+				for (int k = 0; k < meshes.size(); k++) { //For each mesh
+					cout << "Meshes[" << k << "].shaderIndex = " << meshes[k]->shaderIndex << endl;
+
+					if (meshes[k]->shaderIndex == j) { //Is this mesh set to this shader?
+						cout << "Drawing mesh " << k << " and shader " << j << endl;
+						VkDeviceSize offsets[] = { 0 };
+						VkBuffer vertexBufferArray[] = { meshes[k]->vertexBuffer };
+						vkCmdBindVertexBuffers(renderer.commandBuffers[i], 0, 1, vertexBufferArray, offsets);
+						vkCmdBindIndexBuffer(renderer.commandBuffers[i], meshes[k]->indexBuffer, 0, VK_INDEX_TYPE_UINT32);
+						vkCmdBindDescriptorSets(renderer.commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, renderer.pipelineLayout, 0, 1, &meshes[k]->descriptorSets[i], 0, NULL);
+						vkCmdDrawIndexed(renderer.commandBuffers[i], meshes[k]->indicesSize, 1, 0, 0, 0);
+
+					}
+				}
+			}
+			vkCmdEndRenderPass(renderer.commandBuffers[i]);
+			res = vkEndCommandBuffer(renderer.commandBuffers[i]);
+			assres;
+		}
+	}
+
 	void finishFrame() { //god this is jank
 		VkSubmitInfo submitInfo = {};
 		submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
