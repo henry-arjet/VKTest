@@ -5,7 +5,6 @@
 class Script : Component {
 public:
 	void update() {
-		std::cout << "Scripting!" << std::endl;
 	}
 	Script(GameObject & gameObject) : Component(gameObject){}
 };

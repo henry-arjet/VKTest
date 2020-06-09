@@ -16,6 +16,8 @@
 #include <SDL2/SDL.h>
 #include <iostream>
 
+#define STB_IMAGE_IMPLEMENTATION
+#include <stb_image.h>
 
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
 
@@ -198,6 +200,6 @@ void loop(RenderController &renderController) {
 		for (int j = 0; j < models[0].meshes.size(); j++) {
 			models[0].meshes[j].updateUniformBuffer(renderController.renderer.currentFrame);
 		}
-		renderController.renderer.finishFrame();
+		renderController.finishFrame();
 	}
 }

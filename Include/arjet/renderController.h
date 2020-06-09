@@ -15,7 +15,6 @@
 #define uint uint32_t
 #define scuint static_cast<uint32_t>
 
-
 #include <arjet/renderer.h>
 #include <arjet/vertex.h>
 #include <arjet/mesh.h>
@@ -36,6 +35,7 @@
 #include <optional>
 #include <array>
 #include <string>
+
 
 class RenderController {
 public:
@@ -146,4 +146,43 @@ public:
 			assres;
 		}
 	}
+	void finishFrame() { //god this is jank
+		VkSubmitInfo submitInfo = {};
+		submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+		VkSemaphore waitSemaphores[] = { renderer.imageAvailableSemaphores[renderer.currentFrame] };
+		VkPipelineStageFlags waitStages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
+		submitInfo.waitSemaphoreCount = 1;
+		submitInfo.pWaitSemaphores = waitSemaphores;
+		submitInfo.pWaitDstStageMask = waitStages;
+		submitInfo.commandBufferCount = 1;
+		submitInfo.pCommandBuffers = &renderer.commandBuffers[renderer.imageIndex];
+		VkSemaphore signalSemaphores[] = { renderer.renderFinishedSemaphores[renderer.currentFrame] };
+		submitInfo.signalSemaphoreCount = 1;
+		submitInfo.pSignalSemaphores = signalSemaphores;
+		vkResetFences(renderer.device, 1, &renderer.inFlightFences[renderer.currentFrame]);
+		res = vkQueueSubmit(renderer.graphicsQueue, 1, &submitInfo, renderer.inFlightFences[renderer.currentFrame]);
+		assres;
+
+		VkPresentInfoKHR presentInfo = {};
+		presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+		presentInfo.waitSemaphoreCount = 1;
+		presentInfo.pWaitSemaphores = signalSemaphores;
+		VkSwapchainKHR swapchains[] = { renderer.swapchain };
+		presentInfo.swapchainCount = 1;
+		presentInfo.pSwapchains = swapchains;
+		presentInfo.pImageIndices = &renderer.imageIndex;
+
+		res = vkQueuePresentKHR(renderer.graphicsQueue, &presentInfo);//remember we asserted that graphicsQueue = presentQueue
+		if (res == VK_ERROR_OUT_OF_DATE_KHR || res == VK_SUBOPTIMAL_KHR || renderer.framebufferResized) {
+			renderer.framebufferResized = false;
+			//recreateSwapchain(); TODO
+			return;
+		}
+		else if (res != VK_SUCCESS) {
+			throw std::runtime_error("failed to present swap chain image");
+		}
+
+		renderer.currentFrame = (renderer.currentFrame + 1) % renderer.MAX_FRAMES_IN_FLIGHT;
+	}
+	
 };
