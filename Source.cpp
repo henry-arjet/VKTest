@@ -175,7 +175,8 @@ void loop(RenderController &renderController) {
 			SDL_WarpMouseInWindow(renderController.renderer.window, 50, 50);
 		}
 		//End of input
-		testObject.update();
+		
+		//testObject.update();
 
 		//Now lets do actual rendering stuff
 		meshes[0].ubo.view = mainCamera.GetViewMatrix(); //still light mesh
