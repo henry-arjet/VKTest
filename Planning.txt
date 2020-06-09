@@ -1,12 +1,1 @@
-I'm trying to make mesh independent from renderer. I have a list of dependancies and solutions
-
-UBO - Class - Create own .h, used by both renderer.h and mesh.h
-Descriptor Pools - Data - pass in call to createDescriptorSets
-createBuffer and copyBuffer - Switch functionality of createVertexBuffer and IndexBuffer to renderer
-swapchain images.size - Data - pass in call to createUniformBuffers and createDescriptorSets
-Texture Sampler & textureImageViews - Data - pass in call to CDS
-Swapchain Extent - Data - pass in call to updateUniformBuffer
-
-Current plan is to have an overarching master object that has functions like
-createCommandBuffer, and holds the meshes and shaders (or at least references to the meshes),
-as well as the renderer (which has been stripped of some functions)
+https://docs.google.com/document/d/1gV623m_ni5VCXX6cBesvXYt6AhMahFN6L4cslF4WqhM/edit?usp=sharing
