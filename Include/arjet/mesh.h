@@ -66,7 +66,7 @@ public:
 		createIndexBuffer();
 		createUniformBuffers();
 		createDescriptorSets();
-		//pushMesh();
+		pushMesh();
 		indicesSize = indices.size(); //Again, shouldn't exist
 	}
 
@@ -157,7 +157,6 @@ public:
 			imageInfo[1].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 			if ((featureFlags & ARJET_SHADER_FLAG_NORMAL) != 0){// checks if mesh has normal
 				imageInfo[1].imageView = renderer.textureImageViews[textures[1].texIndex]; //This one is the normal map
-				cout << "TEST!\n";
 			}
 			else imageInfo[1].imageView = renderer.textureImageViews[0]; //else hands it whatever is texture 0. Doesn't matter
 			imageInfo[1].sampler = renderer.textureSampler; 
@@ -196,7 +195,7 @@ public:
 		vkUnmapMemory(renderer.device, uniformBuffersMemory[currentImage]);
 	}
 	void pushMesh() {
-		if (renderer.descriptorSets.size() <= index) {
+		/*if (renderer.descriptorSets.size() <= index) {
 			renderer.descriptorSets.resize(index + 1);
 		}
 		//renderer.descriptorSets[index] = descriptorSets;
@@ -215,7 +214,7 @@ public:
 			renderer.indicesSize.resize(index + 1);
 		}
 		renderer.indicesSize[index] = indices.size();
-
+		*/
 		if (renderer.shaderIndices.size() <= index) {
 			renderer.shaderIndices.resize(index + 1);
 		}renderer.shaderIndices[index] = shaderIndex;

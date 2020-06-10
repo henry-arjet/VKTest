@@ -31,12 +31,14 @@ uint TextureFromFile(Renderer &renderer, uint count, const char *path, const str
 
 class Model {
 public:
+	bool draw = true;
+	VkCommandBuffer buffers[2];
 	//functions
 	Model(Renderer &r, string const &path, uint &mCount, uint &tCount) : renderer(r), meshCounter(mCount), textureCounter(tCount) {
 		loadModel(path);
 	}
-
 	vector<Mesh> meshes; //needs to be accessable
+
 private:
 	//model data
 	string directory;

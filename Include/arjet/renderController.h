@@ -20,6 +20,7 @@
 #include <arjet/mesh.h>
 #include <arjet/shader.h>
 #include <arjet/UBO.h>
+#include <arjet/model.h>
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -42,6 +43,15 @@ public:
 	Renderer renderer;
 	VkResult res;
 	vector<Mesh*> meshes;
+	vector<Model*> models;
+
+	vector<vector<vector<VkDescriptorSet>>> descriptorSets; //3d. 1st for the shader, second for the frame, third for the descriptor sets.
+															//Could simplify to vector of arrays. Shouldn't it be the same for both frames?
+	vector<vector<VkBuffer>> vertexBuffers; //2d, it will be the same vertex buffer for both frames
+	vector<vector<VkBuffer>> indexBuffers;
+	vector<vector<uint>> indexSizes;
+
+
 	RenderController(int width = 1600, int height = 900) : renderer(Renderer(width, height)) {
 	}
 
@@ -54,12 +64,8 @@ public:
 		renderer.shaders.push_back(Shader("Shaders/lightV.spv", "Shaders/lightF.spv", 1, renderer.device));
 
 		layThePipe();
-
-		//Add meshes
-
-		//finalizeVulkan();
-
-		//
+		renderer.createStartCommands();
+		renderer.createSubmitCommands();
 	}
 
 	void initVulkan() { //Part one of setting up vulkan. Create shaders after calling this function
@@ -71,6 +77,7 @@ public:
 		renderer.createSwapchain();
 		renderer.createRenderPass();
 		renderer.createDescriptorSetLayout();
+
 	}
 	void layThePipe() {//Yes. I named it that. I have fallen that far. 
 					   //Anyway this is called after shaders are created, but before meshes
@@ -81,73 +88,86 @@ public:
 		renderer.createTextureSampler();
 		renderer.createDescriptorPool();
 	}
-	void finalizeVulkan() { //I need to have the descriptor sets from the objects ready before I can process these functions
-		createCommandBuffers(); 
+	void finalizeVulkan() {
 		renderer.createSyncObjects();
+
+		//resize vectors
+		//Assumes number of shaders constant
+		uint s = renderer.shaderIndices.size();
+		descriptorSets.resize(s);
+		for (int i = 0; i < s; i++){
+			descriptorSets[i].resize(2);
+		}
+		vertexBuffers.resize(s);
+		indexBuffers.resize(s);
+		indexSizes.resize(s);
 	}
 
 
-	void createCommandBuffers() {
-		renderer.commandBuffers.resize(renderer.swapchainFramebuffers.size());
-		assert(renderer.commandBuffers.size() > 0);
+	void batch() { //fills the descriptor sets, vertex buffer, and index buffer vectors. Allows for batched drawcalls
+				   //Should be called every frame
+		uint cframe = renderer.currentFrame;
 
-		VkCommandBufferAllocateInfo cmdInfo = {};
-		cmdInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-		cmdInfo.pNext = NULL;
-		cmdInfo.commandPool = renderer.commandPool;
-		cmdInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-		cmdInfo.commandBufferCount = (UINT)renderer.commandBuffers.size();
-		res = vkAllocateCommandBuffers(renderer.device, &cmdInfo, renderer.commandBuffers.data());
+		for (uint i = 0; i < renderer.shaderIndices.size(); i++) {//for each shader
+			cout << "Got this far" << endl;
+			cout << "models.size() = " << models.size() << endl;
 
-		assres;
-
-		for (UINT i = 0; i < renderer.commandBuffers.size(); i++) {
-
-			VkCommandBufferBeginInfo beginInfo = {};
-			beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-			res = vkBeginCommandBuffer(renderer.commandBuffers[i], &beginInfo);
-			assres;
-
-			VkRenderPassBeginInfo renderPassInfo = {};
-			renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-			renderPassInfo.renderPass = renderer.renderPass;
-			renderPassInfo.framebuffer = renderer.swapchainFramebuffers[i];
-			renderPassInfo.renderArea.offset = { 0,0 };
-			renderPassInfo.renderArea.extent = renderer.swapchainExtent;
-
-			std::array<VkClearValue, 2> clearValues = {  };
-			clearValues[0].color = { 0.3f, 0.3f, 0.3f, 1.0f };
-			clearValues[1].depthStencil = { 1.0f, 0 };
-			renderPassInfo.clearValueCount = scuint(clearValues.size());
-			renderPassInfo.pClearValues = clearValues.data();
-			vkCmdBeginRenderPass(renderer.commandBuffers[i], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
-			cout << "Shaders.size = " << renderer.shaders.size() << endl;
-
-			for (int j = 0; j < renderer.shaders.size(); j++) {	
-				cout << "Checking shader " << j << endl;
-				vkCmdBindPipeline(renderer.commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, renderer.graphicsPipelines[j]);
-				for (int k = 0; k < meshes.size(); k++) { //For each mesh
-					cout << "Meshes[" << k << "].shaderIndex = " << meshes[k]->shaderIndex << endl;
-
-					if (meshes[k]->shaderIndex == j) { //Is this mesh set to this shader?
-						cout << "Drawing mesh " << k << " and shader " << j << endl;
-						VkDeviceSize offsets[] = { 0 };
-						VkBuffer vertexBufferArray[] = { meshes[k]->vertexBuffer };
-						vkCmdBindVertexBuffers(renderer.commandBuffers[i], 0, 1, vertexBufferArray, offsets);
-						vkCmdBindIndexBuffer(renderer.commandBuffers[i], meshes[k]->indexBuffer, 0, VK_INDEX_TYPE_UINT32);
-						vkCmdBindDescriptorSets(renderer.commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, renderer.pipelineLayout, 0, 1, &meshes[k]->descriptorSets[i], 0, NULL);
-						vkCmdDrawIndexed(renderer.commandBuffers[i], meshes[k]->indicesSize, 1, 0, 0, 0);
-
+			for (uint j = 0; j < models.size(); j++) {
+				if (models[j]->draw == true) {
+					for (uint k = 0; k < models[j]->meshes.size(); k++) {
+						descriptorSets[i][cframe].push_back(models[j]->meshes[k].descriptorSets[cframe]);
+						vertexBuffers[i].push_back(models[j]->meshes[k].vertexBuffer);
+						indexBuffers[i].push_back(models[j]->meshes[k].indexBuffer);
+						indexSizes[i].push_back(models[j]->meshes[k].indicesSize);
 					}
 				}
 			}
-			vkCmdEndRenderPass(renderer.commandBuffers[i]);
-			res = vkEndCommandBuffer(renderer.commandBuffers[i]);
-			assres;
 		}
 	}
 
-	VkCommandBuffer * createCommandBuffersModel() { //Should return an array of size 2, one buffer for each frame in flight
+	void createCommandBuffers() {
+
+		uint size = renderer.shaderIndices.size(); //how many shaders (and thus pipelines) we're working with
+		uint cframe = renderer.currentFrame;
+		
+		renderer.commandBuffers.resize(2); //match frames in flight
+		for (int i = 0; i < 2; i++) {//match shaders
+			renderer.commandBuffers[i].resize(size);
+		}
+
+		VkCommandBufferAllocateInfo cmdInfo = {};
+			cmdInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+			cmdInfo.pNext = NULL;
+			cmdInfo.commandPool = renderer.commandPool;
+			cmdInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+			cmdInfo.commandBufferCount = size;
+			res = vkAllocateCommandBuffers(renderer.device, &cmdInfo, renderer.commandBuffers[cframe].data());
+
+			for (int i = 0; i < size /*of the shaders*/; i++) {
+				VkCommandBufferBeginInfo beginInfo = {};
+				beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+				res = vkBeginCommandBuffer(renderer.commandBuffers[cframe][i], &beginInfo);
+				assres;
+
+				vkCmdBindPipeline(renderer.commandBuffers[cframe][i], VK_PIPELINE_BIND_POINT_GRAPHICS, renderer.graphicsPipelines[i]);
+
+				vector<VkDeviceSize> offsets = {}; //creates a vector of offsets that are all 0
+				for (int l = 0; l < vertexBuffers[i].size(); l++) {
+					offsets.push_back(0);
+				}
+				vkCmdBindVertexBuffers(renderer.commandBuffers[cframe][i], 0, vertexBuffers[i].size(), vertexBuffers[i].data(), offsets.data());
+				vkCmdBindDescriptorSets(renderer.commandBuffers[cframe][i], VK_PIPELINE_BIND_POINT_GRAPHICS, renderer.pipelineLayout, 0, descriptorSets[i][cframe].size(), descriptorSets[i][cframe].data(), 0, NULL);
+				for (int j = 0; j < indexBuffers.size(); j++) { //for each draw call
+					vkCmdBindIndexBuffer(renderer.commandBuffers[cframe][i], indexBuffers[i][j], 0, VK_INDEX_TYPE_UINT32);
+					vkCmdDrawIndexed(renderer.commandBuffers[cframe][i], indexSizes[i][j], 1, 0, 0, 0);
+				}
+				res = vkEndCommandBuffer(renderer.commandBuffers[cframe][i]);
+				assres;
+			}
+		}
+
+	/*VkCommandBuffer * createCommandBuffersModel(vector<Mesh> modelMeshes) { //creates the draw calls for a model
+		//Should return an array of size 2, one buffer for each frame in flight
 		VkCommandBuffer buffers[2];
 
 		VkCommandBufferAllocateInfo cmdInfo = {};
@@ -167,30 +187,33 @@ public:
 			res = vkBeginCommandBuffer(buffers[i], &beginInfo);
 			assres;
 
-			for (int j = 0; j < renderer.shaders.size(); j++) {
-				vkCmdBindPipeline(renderer.commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, renderer.graphicsPipelines[j]);
-				for (int k = 0; k < meshes.size(); k++) { //For each mesh
-					cout << "Meshes[" << k << "].shaderIndex = " << meshes[k]->shaderIndex << endl;
+			for (int k = 0; k < modelMeshes.size(); k++) { //For each mesh
+				VkDeviceSize offsets[] = { 0 };
+				VkBuffer vertexBufferArray[] = { modelMeshes[k].vertexBuffer };
+				vkCmdBindVertexBuffers(buffers[i], 0, 1, vertexBufferArray, offsets);
+				vkCmdBindIndexBuffer(buffers[i], modelMeshes[k].indexBuffer, 0, VK_INDEX_TYPE_UINT32);
+				vkCmdBindDescriptorSets(buffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, renderer.pipelineLayout, 0, 1, &modelMeshes[k].descriptorSets[i], 0, NULL);
+				vkCmdDrawIndexed(buffers[i], modelMeshes[k].indicesSize, 1, 0, 0, 0);
 
-					if (meshes[k]->shaderIndex == j) { //Is this mesh set to this shader?
-						cout << "Drawing mesh " << k << " and shader " << j << endl;
-						VkDeviceSize offsets[] = { 0 };
-						VkBuffer vertexBufferArray[] = { meshes[k]->vertexBuffer };
-						vkCmdBindVertexBuffers(renderer.commandBuffers[i], 0, 1, vertexBufferArray, offsets);
-						vkCmdBindIndexBuffer(renderer.commandBuffers[i], meshes[k]->indexBuffer, 0, VK_INDEX_TYPE_UINT32);
-						vkCmdBindDescriptorSets(renderer.commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, renderer.pipelineLayout, 0, 1, &meshes[k]->descriptorSets[i], 0, NULL);
-						vkCmdDrawIndexed(renderer.commandBuffers[i], meshes[k]->indicesSize, 1, 0, 0, 0);
-
-					}
-				}
 			}
 			vkCmdEndRenderPass(renderer.commandBuffers[i]);
 			res = vkEndCommandBuffer(renderer.commandBuffers[i]);
 			assres;
 		}
-	}
+		return buffers;
+	}*/
 
 	void finishFrame() { //god this is jank
+		batch();
+		createCommandBuffers();
+
+		vector<VkCommandBuffer> finalBuffers;
+		finalBuffers.push_back(renderer.startCommandBuffers[renderer.currentFrame]);
+
+		for (int i = 0; i < renderer.commandBuffers.size(); i++) {
+			finalBuffers.push_back(renderer.commandBuffers[renderer.currentFrame][i]);
+		}
+		finalBuffers.push_back(renderer.submitCommandBuffers[renderer.currentFrame]);//Both should be the same, should just have a "submit" buffer ready to go
 		VkSubmitInfo submitInfo = {};
 		submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 		VkSemaphore waitSemaphores[] = { renderer.imageAvailableSemaphores[renderer.currentFrame] };
@@ -198,8 +221,8 @@ public:
 		submitInfo.waitSemaphoreCount = 1;
 		submitInfo.pWaitSemaphores = waitSemaphores;
 		submitInfo.pWaitDstStageMask = waitStages;
-		submitInfo.commandBufferCount = 1;
-		submitInfo.pCommandBuffers = &renderer.commandBuffers[renderer.imageIndex];
+		submitInfo.commandBufferCount = finalBuffers.size();
+		submitInfo.pCommandBuffers = finalBuffers.data();
 		VkSemaphore signalSemaphores[] = { renderer.renderFinishedSemaphores[renderer.currentFrame] };
 		submitInfo.signalSemaphoreCount = 1;
 		submitInfo.pSignalSemaphores = signalSemaphores;

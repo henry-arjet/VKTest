@@ -1,7 +1,6 @@
 #pragma once
 //This is the model script used to handle models using the new gameobject system
-
-//TODO I need to give it some control over its draw calls
+//This version is recreated to work with the gameobject system and new rendedring system
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>

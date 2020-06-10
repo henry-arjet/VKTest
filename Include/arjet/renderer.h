@@ -91,10 +91,9 @@ public:
 	VkCommandPool commandPool;
 	uint queueFamilyIndex; //assumes single graphics/present queue family
 	
-	vector <VkCommandBuffer> commandBuffers; //DEPRECIATED
+	vector<vector<VkCommandBuffer>> commandBuffers; //First per frame, second per shader
 	VkCommandBuffer startCommandBuffers[2]; //starts the render pass
-	vector<VkCommandBuffer> shaderCommandBuffers; //tells the GPU to switch to a certin shader by index
-	VkCommandBuffer submitCommandBuffers[2];//submits the render pass
+	VkCommandBuffer submitCommandBuffers[2]; //ends the render pass
 
 	vector<VkSemaphore> imageAvailableSemaphores;
 	vector<VkSemaphore> renderFinishedSemaphores;
@@ -120,7 +119,7 @@ public:
 
 	vector<VkDescriptorPool> descriptorPools; //Set of descriptor pools. One pool per mesh. Props could push these to mesh local
 	vector<vector<VkDescriptorSet>> descriptorSets; //2d vector of descriptor sets, first dimension is per mesh, second is per frame
-	uint maxDescriptors = 20;//the maximum number of descriptor SETS the renderer can support. Set before init. Used to initialize the pool
+	uint maxDescriptors = 40;//the maximum number of descriptor SETS the renderer can support. Set before init. Used to initialize the pool
 
 	vector<Shader> shaders;
 
@@ -898,7 +897,7 @@ public:
 
 	void cleanupSwapchain() {
 		for (auto framebuffer : swapchainFramebuffers) { vkDestroyFramebuffer(device, framebuffer, NULL); }
-		vkFreeCommandBuffers(device, commandPool, static_cast<UINT>(commandBuffers.size()), commandBuffers.data());
+		//vkFreeCommandBuffers(device, commandPool, static_cast<UINT>(commandBuffers.size()), commandBuffers.data());
 		//vkDestroyPipeline(device, graphicsPipeline, NULL);
 		vkDestroyPipelineLayout(device, pipelineLayout, NULL);
 		vkDestroyRenderPass(device, renderPass, NULL);
@@ -1070,29 +1069,6 @@ public:
 		}
 	}
 
-	void createShaderCommands() { //super short, only one command
-		uint size = graphicsPipelines.size(); //how many shaders (and thus pipelines) we're working with
-
-		VkCommandBufferAllocateInfo cmdInfo = {};
-		cmdInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-		cmdInfo.pNext = NULL;
-		cmdInfo.commandPool = commandPool;
-		cmdInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-		cmdInfo.commandBufferCount = size;
-		res = vkAllocateCommandBuffers(device, &cmdInfo, shaderCommandBuffers.data());
-
-		for (int i = 0; i < size; i++) {
-			VkCommandBufferBeginInfo beginInfo = {};
-			beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-			res = vkBeginCommandBuffer(shaderCommandBuffers[i], &beginInfo);
-			assres;
-
-			vkCmdBindPipeline(shaderCommandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipelines[i]);
-
-			res = vkEndCommandBuffer(shaderCommandBuffers[i]);
-			assres;
-		}
-	}
 
 	void createSubmitCommands() {
 		VkCommandBufferAllocateInfo cmdInfo = {};

@@ -92,11 +92,20 @@ int main() {
 		//mesh.texIndex = mesh.descriptorSets.size(); // FIXME
 		renderController.meshes.push_back(&(meshes[i]));
 	}
+
+	//push models to renderController
+
 	for (int i = 0; i < models.size(); i++) {
-		for (int j = 0; j < models[i].meshes.size(); j++) {
-			renderController.meshes.push_back(&(models[i].meshes[j]));
-		}
+		renderController.models.push_back(&(models[i]));
 	}
+
+
+	//for (int i = 0; i < models.size(); i++) {
+	//	cout << "test" << endl;
+	//	memcpy(models[i].buffers, renderController.createCommandBuffersModel(models[i].meshes), 
+	//		sizeof(VkCommandBuffer)*2);//This is the first time I've used memcpy by myself
+	//	//Lord I hope it works
+	//}
 
 
 
