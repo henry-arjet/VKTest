@@ -99,13 +99,9 @@ int main() {
 		renderController.models.push_back(&(models[i]));
 	}
 
-
-	//for (int i = 0; i < models.size(); i++) {
-	//	cout << "test" << endl;
-	//	memcpy(models[i].buffers, renderController.createCommandBuffersModel(models[i].meshes), 
-	//		sizeof(VkCommandBuffer)*2);//This is the first time I've used memcpy by myself
-	//	//Lord I hope it works
-	//}
+	for (int i = 0; i < models.size(); i++) {
+		renderController.createCommandBuffersModel(models[i].meshes, models[i].buffers);
+	}
 
 
 
@@ -114,7 +110,7 @@ int main() {
 	mainCamera = Camera();
 	startTime = SDL_GetPerformanceCounter();
 	SDL_ShowCursor(0);
-	loop(renderController);
+	loop(renderController); //Main loop
 	//renderer.cleanup();
 	return 0;
 }

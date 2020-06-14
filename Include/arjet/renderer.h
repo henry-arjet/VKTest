@@ -91,9 +91,9 @@ public:
 	VkCommandPool commandPool;
 	uint queueFamilyIndex; //assumes single graphics/present queue family
 	
-	vector<vector<VkCommandBuffer>> commandBuffers; //First per frame, second per shader
-	VkCommandBuffer startCommandBuffers[2]; //starts the render pass
-	VkCommandBuffer submitCommandBuffers[2]; //ends the render pass
+	VkCommandBuffer commandBuffers[2]; //per frame
+	//VkCommandBuffer startCommandBuffers[2]; //starts the render pass
+	//VkCommandBuffer submitCommandBuffers[2]; //ends the render pass
 
 	vector<VkSemaphore> imageAvailableSemaphores;
 	vector<VkSemaphore> renderFinishedSemaphores;
@@ -232,7 +232,6 @@ public:
 		vkBeginCommandBuffer(commandBuffer, &beginInfo);
 
 		return commandBuffer;
-
 	}
 
 	void endSingleTimeCommands(VkCommandBuffer commandBuffer) {
@@ -1032,7 +1031,7 @@ public:
 
 
 	}
-
+	/*
 	void createStartCommands() {
 		VkCommandBufferAllocateInfo cmdInfo = {};
 		cmdInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
@@ -1087,6 +1086,7 @@ public:
 		}
 	}
 
+	*/
 	void cleanup() { //TODO Need to add per mesh cleanup
 
 		vkWaitForFences(device, MAX_FRAMES_IN_FLIGHT, inFlightFences.data(), VK_TRUE, UINT64_MAX);

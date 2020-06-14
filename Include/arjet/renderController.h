@@ -64,8 +64,6 @@ public:
 		renderer.shaders.push_back(Shader("Shaders/lightV.spv", "Shaders/lightF.spv", 1, renderer.device));
 
 		layThePipe();
-		renderer.createStartCommands();
-		renderer.createSubmitCommands();
 	}
 
 	void initVulkan() { //Part one of setting up vulkan. Create shaders after calling this function
@@ -104,7 +102,7 @@ public:
 	}
 
 
-	void batch() { //fills the descriptor sets, vertex buffer, and index buffer vectors. Allows for batched drawcalls
+	/*void batch() { //fills the descriptor sets, vertex buffer, and index buffer vectors. Allows for batched drawcalls
 				   //Should be called every frame
 		uint cframe = renderer.currentFrame;
 
@@ -123,58 +121,52 @@ public:
 				}
 			}
 		}
-	}
+	}*/
 
 	void createCommandBuffers() {
 
-		uint size = renderer.shaderIndices.size(); //how many shaders (and thus pipelines) we're working with
+		uint size = renderer.shaderIndices.size(); //how many shaders (and thus pipelines) we're working with. Depreciated
 		uint cframe = renderer.currentFrame;
 		
-		renderer.commandBuffers.resize(2); //match frames in flight
-		for (int i = 0; i < 2; i++) {//match shaders
-			renderer.commandBuffers[i].resize(size);
-		}
-
-		VkCommandBufferAllocateInfo cmdInfo = {};
-			cmdInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-			cmdInfo.pNext = NULL;
-			cmdInfo.commandPool = renderer.commandPool;
-			cmdInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-			cmdInfo.commandBufferCount = size;
-			res = vkAllocateCommandBuffers(renderer.device, &cmdInfo, renderer.commandBuffers[cframe].data());
-
-			for (int i = 0; i < size /*of the shaders*/; i++) {
-				VkCommandBufferBeginInfo beginInfo = {};
-				beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-				res = vkBeginCommandBuffer(renderer.commandBuffers[cframe][i], &beginInfo);
-				assres;
-
-				vkCmdBindPipeline(renderer.commandBuffers[cframe][i], VK_PIPELINE_BIND_POINT_GRAPHICS, renderer.graphicsPipelines[i]);
-
-				vector<VkDeviceSize> offsets = {}; //creates a vector of offsets that are all 0
-				for (int l = 0; l < vertexBuffers[i].size(); l++) {
-					offsets.push_back(0);
-				}
-				vkCmdBindVertexBuffers(renderer.commandBuffers[cframe][i], 0, vertexBuffers[i].size(), vertexBuffers[i].data(), offsets.data());
-				vkCmdBindDescriptorSets(renderer.commandBuffers[cframe][i], VK_PIPELINE_BIND_POINT_GRAPHICS, renderer.pipelineLayout, 0, descriptorSets[i][cframe].size(), descriptorSets[i][cframe].data(), 0, NULL);
-				for (int j = 0; j < indexBuffers.size(); j++) { //for each draw call
-					vkCmdBindIndexBuffer(renderer.commandBuffers[cframe][i], indexBuffers[i][j], 0, VK_INDEX_TYPE_UINT32);
-					vkCmdDrawIndexed(renderer.commandBuffers[cframe][i], indexSizes[i][j], 1, 0, 0, 0);
-				}
-				res = vkEndCommandBuffer(renderer.commandBuffers[cframe][i]);
-				assres;
-			}
-		}
-
-	/*VkCommandBuffer * createCommandBuffersModel(vector<Mesh> modelMeshes) { //creates the draw calls for a model
-		//Should return an array of size 2, one buffer for each frame in flight
-		VkCommandBuffer buffers[2];
 
 		VkCommandBufferAllocateInfo cmdInfo = {};
 		cmdInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
 		cmdInfo.pNext = NULL;
 		cmdInfo.commandPool = renderer.commandPool;
 		cmdInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+		cmdInfo.commandBufferCount = 1;
+		res = vkAllocateCommandBuffers(renderer.device, &cmdInfo, &renderer.commandBuffers[cframe]);
+
+		VkCommandBufferBeginInfo beginInfo = {};
+
+		beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+		res = vkBeginCommandBuffer(renderer.commandBuffers[cframe], &beginInfo);
+		assres;
+
+
+		vector<VkCommandBuffer> secondaryBuffers;
+		secondaryBuffers.reserve(models.size()); //Allocates enough space for all the models so we don't have to reallocate
+		for (int i = 0; i < models.size(); i++) {
+			if (models[i]->draw) { //If this model should be drawn
+
+				secondaryBuffers.push_back(models[i]->buffers[cframe]);
+			}
+		}
+		vkCmdExecuteCommands(renderer.commandBuffers[cframe], secondaryBuffers.size(), secondaryBuffers.data());
+				
+		res = vkEndCommandBuffer(renderer.commandBuffers[cframe]);
+		assres;
+			
+	}
+
+	void createCommandBuffersModel(vector<Mesh> modelMeshes, VkCommandBuffer buffers[2]) { //creates the draw calls for a model
+											//Should return an array of size 2, one buffer for each frame in flight
+
+		VkCommandBufferAllocateInfo cmdInfo = {};
+		cmdInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+		cmdInfo.pNext = NULL;
+		cmdInfo.commandPool = renderer.commandPool;
+		cmdInfo.level = VK_COMMAND_BUFFER_LEVEL_SECONDARY;
 		cmdInfo.commandBufferCount = 2;
 		res = vkAllocateCommandBuffers(renderer.device, &cmdInfo, buffers);
 
@@ -182,11 +174,24 @@ public:
 
 		for (UINT i = 0; i < 2; i++) { //hardcoded to create two command buffers
 
+			VkCommandBufferInheritanceInfo inherInfo = {};
+			inherInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO;
+			inherInfo.occlusionQueryEnable = 0;
+			inherInfo.queryFlags = 0; //I have no fucking clue what inherited queries are. Or where they're from. But spec says I need this.
+			inherInfo.renderPass = renderer.renderPass;
+			//inherInfo.framebuffer //Could do this, might help a bit. Not required
+
+
 			VkCommandBufferBeginInfo beginInfo = {};
 			beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+			beginInfo.flags = VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT | VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT; 
+			//Set it up for being called from the main render pass, and called multiple times
+			//I shouldn't need simultaneous as I'm creating two draw calls, but that's ineficcient
+			beginInfo.pInheritanceInfo = &inherInfo;
 			res = vkBeginCommandBuffer(buffers[i], &beginInfo);
 			assres;
-
+			vkCmdBindPipeline(buffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, renderer.graphicsPipelines[0]); //HARDCODED TO BASE SHADER
+			
 			for (int k = 0; k < modelMeshes.size(); k++) { //For each mesh
 				VkDeviceSize offsets[] = { 0 };
 				VkBuffer vertexBufferArray[] = { modelMeshes[k].vertexBuffer };
@@ -194,26 +199,18 @@ public:
 				vkCmdBindIndexBuffer(buffers[i], modelMeshes[k].indexBuffer, 0, VK_INDEX_TYPE_UINT32);
 				vkCmdBindDescriptorSets(buffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, renderer.pipelineLayout, 0, 1, &modelMeshes[k].descriptorSets[i], 0, NULL);
 				vkCmdDrawIndexed(buffers[i], modelMeshes[k].indicesSize, 1, 0, 0, 0);
-
 			}
-			vkCmdEndRenderPass(renderer.commandBuffers[i]);
-			res = vkEndCommandBuffer(renderer.commandBuffers[i]);
+			res = vkEndCommandBuffer(buffers[i]);
 			assres;
 		}
-		return buffers;
-	}*/
+	}
 
 	void finishFrame() { //god this is jank
-		batch();
 		createCommandBuffers();
+		//Create the final command buffer
+		uint cframe = renderer.currentFrame;
 
-		vector<VkCommandBuffer> finalBuffers;
-		finalBuffers.push_back(renderer.startCommandBuffers[renderer.currentFrame]);
 
-		for (int i = 0; i < renderer.commandBuffers.size(); i++) {
-			finalBuffers.push_back(renderer.commandBuffers[renderer.currentFrame][i]);
-		}
-		finalBuffers.push_back(renderer.submitCommandBuffers[renderer.currentFrame]);//Both should be the same, should just have a "submit" buffer ready to go
 		VkSubmitInfo submitInfo = {};
 		submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 		VkSemaphore waitSemaphores[] = { renderer.imageAvailableSemaphores[renderer.currentFrame] };
@@ -221,8 +218,8 @@ public:
 		submitInfo.waitSemaphoreCount = 1;
 		submitInfo.pWaitSemaphores = waitSemaphores;
 		submitInfo.pWaitDstStageMask = waitStages;
-		submitInfo.commandBufferCount = finalBuffers.size();
-		submitInfo.pCommandBuffers = finalBuffers.data();
+		submitInfo.commandBufferCount = 1;
+		submitInfo.pCommandBuffers = &renderer.commandBuffers[cframe];
 		VkSemaphore signalSemaphores[] = { renderer.renderFinishedSemaphores[renderer.currentFrame] };
 		submitInfo.signalSemaphoreCount = 1;
 		submitInfo.pSignalSemaphores = signalSemaphores;
@@ -248,8 +245,6 @@ public:
 		else if (res != VK_SUCCESS) {
 			throw std::runtime_error("failed to present swap chain image");
 		}
-
 		renderer.currentFrame = (renderer.currentFrame + 1) % renderer.MAX_FRAMES_IN_FLIGHT;
 	}
-	
 };
