@@ -1,8 +1,6 @@
-#ifndef SHADER_H
-#define SHADER_H
-
+#pragma once
+//Shader class. Simple vert/frag structure
 #include <vulkan/vulkan.hpp>
-
 
 #include <string>
 #include <fstream>
@@ -12,6 +10,9 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <vector>
+
+#define uint uint32_t
+
 
 using std::string;
 using std::cout;
@@ -24,28 +25,24 @@ using glm::vec4;
 using glm::mat3;
 using glm::mat4;
 
-
-static vector<char> readFile(const std::string& filename) { //Copied from renderer, in turn copied from Vulkan Tutorial
-	std::ifstream file(filename, std::ios::ate | std::ios::binary);
-	if (!file.is_open()) {
-		throw std::runtime_error("Failed to open file");
+struct ShaderPath {
+	string vertPath;
+	string fragPath;
+	ShaderPath(string vert, string frag) {
+		vertPath = vert;
+		fragPath = frag;
 	}
-	size_t fileSize = (size_t)file.tellg();
-	std::vector<char> buffer(fileSize);
+};
 
-	file.seekg(0);
-	file.read(buffer.data(), fileSize);
-	file.close();
-	return buffer;
-}
 
 class Shader {
 public:
 	VkPipelineShaderStageCreateInfo shaderStages[2];
 	uint index;//Just to keep track of it. Should match the index in the renderer
+	Shader() {}
 	Shader(const string vertexPath, const string fragmentPath, uint index, VkDevice d) {
+		Shader::index = index;
 		device = d;
-		this->index = index;
 		//read from files
 		string vertexCode;
 		string fragmentCode;
@@ -74,6 +71,20 @@ public:
 		shaderStages[1] = fragShaderStageInfo;
 	}
 private:
+	static vector<char> readFile(const std::string& filename) { //Copied from renderer, in turn copied from Vulkan Tutorial
+		std::ifstream file(filename, std::ios::ate | std::ios::binary);
+		if (!file.is_open()) {
+			throw std::runtime_error("Failed to open file");
+		}
+		size_t fileSize = (size_t)file.tellg();
+		std::vector<char> buffer(fileSize);
+
+		file.seekg(0);
+		file.read(buffer.data(), fileSize);
+		file.close();
+		return buffer;
+	}
+
 	VkDevice device;
 	VkShaderModule createShaderModule(const std::vector<char>& code) {
 		VkShaderModuleCreateInfo createInfo = {};
@@ -86,5 +97,3 @@ private:
 		return shaderModule;
 	}
 };
-
-#endif

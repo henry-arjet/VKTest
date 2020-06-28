@@ -1,5 +1,6 @@
 #pragma once
 //Fully original
+//Kinda lame. Should redo it
 
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_syswm.h>
@@ -27,14 +28,9 @@ public:
 		keys["2"] = 0;
 		keys["3"] = 0;
 		keys["4"] = 0;
-
-
 	}
 
-
-
-
-	void ProcessKey(SDL_KeyboardEvent *key) {
+	void ProcessKey(SDL_KeyboardEvent* key) {
 		if (key->type == SDL_KEYDOWN) {
 			std::string k = SDL_GetKeyName(key->keysym.sym);
 			keys[k] = 2;
@@ -43,7 +39,7 @@ public:
 
 	}
 
-	bool OnPress(cstr k){ //returns true only once per press
+	bool OnPress(cstr k) { //returns true only once per press
 		if (keys[k] == 2) {
 			keys[k] = 1; //sets it to not return true again until reset
 			return true;
@@ -51,7 +47,7 @@ public:
 		else return false;
 	}
 
-	bool GetButtonDown(cstr k) {		
+	bool GetButtonDown(cstr k) {
 		return (keys[k] != 0); //accepts either 2 (just pressed) or 1 (held down)
 	}
 };

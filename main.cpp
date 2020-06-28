@@ -1,146 +1,170 @@
-/*
- * Vulkan Windowed Program
- *
- * Copyright (C) 2016, 2018 Valve Corporation
- * Copyright (C) 2016, 2018 LunarG, Inc.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
-/*
-Vulkan C++ Windowed Project Template
-Create and destroy a Vulkan surface on an SDL window.
-*/
-
-// Enable the WSI extensions
-#if defined(__ANDROID__)
-#define VK_USE_PLATFORM_ANDROID_KHR
-#elif defined(__linux__)
-#define VK_USE_PLATFORM_XLIB_KHR
-#elif defined(_WIN32)
-#define VK_USE_PLATFORM_WIN32_KHR
-#endif
-
+//Main sorce file
+//Henry Arjet, 2020
 // Tell SDL not to mess with main()
 #define SDL_MAIN_HANDLED
 
-#include <glm/glm.hpp>
-#include <SDL2/SDL.h>
 #include <SDL2/SDL_syswm.h>
 #include <SDL2/SDL_vulkan.h>
-#include <vulkan/vulkan.hpp>
-
-
+#include <SDL2/SDL.h>
 #include <iostream>
 #include <vector>
 
-int main()
-{
-    // Create an SDL window that supports Vulkan rendering.
-    if(SDL_Init(SDL_INIT_VIDEO) != 0) {
-        std::cout << "Could not initialize SDL." << std::endl;
-        return 1;
-    }
-    SDL_Window* window = SDL_CreateWindow("Vulkan Window", SDL_WINDOWPOS_CENTERED,
-        SDL_WINDOWPOS_CENTERED, 1280, 720, SDL_WINDOW_VULKAN);
-    if(window == NULL) {
-        std::cout << "Could not create SDL window." << std::endl;
-        return 1;
-    }
-    
-    // Get WSI extensions from SDL (we can add more if we like - we just can't remove these)
-    unsigned extension_count;
-    if(!SDL_Vulkan_GetInstanceExtensions(window, &extension_count, NULL)) {
-        std::cout << "Could not get the number of required instance extensions from SDL." << std::endl;
-        return 1;
-    }
-    std::vector<const char*> extensions(extension_count);
-    if(!SDL_Vulkan_GetInstanceExtensions(window, &extension_count, extensions.data())) {
-        std::cout << "Could not get the names of required instance extensions from SDL." << std::endl;
-        return 1;
-    }
+#include <arjet/renderer.h>
+#include <arjet/model.h>
+#include <arjet/input.h>
+#include <arjet/camera.h>
+#include <arjet/time.h>
 
-    // Use validation layers if this is a debug build
-    std::vector<const char*> layers;
-#if defined(_DEBUG)
-    layers.push_back("VK_LAYER_LUNARG_standard_validation");
-#endif
+//#define STB_IMAGE_IMPLEMENTATION
+//#include <stb_image.h>
 
-    // vk::ApplicationInfo allows the programmer to specifiy some basic information about the
-    // program, which can be useful for layers and tools to provide more debug information.
-    vk::ApplicationInfo appInfo = vk::ApplicationInfo()
-        .setPApplicationName("Vulkan C++ Windowed Program Template")
-        .setApplicationVersion(1)
-        .setPEngineName("LunarG SDK")
-        .setEngineVersion(1)
-        .setApiVersion(VK_API_VERSION_1_0);
+#define GLM_FORCE_DEPTH_ZERO_TO_ONE//depth is -1 - 1 in GL and 0 - 1 in VK 
+#define GLM_FORCE_DEFAULT_ALIGNED_GENTYPES //Doesn't work if I don't do this. Alignment is still mostly a mystery to me.
+//#include <glm/glm.hpp>
+//#include <glm/gtc/matrix_transform.hpp>
 
-    // vk::InstanceCreateInfo is where the programmer specifies the layers and/or extensions that
-    // are needed.
-    vk::InstanceCreateInfo instInfo = vk::InstanceCreateInfo()
-        .setFlags(vk::InstanceCreateFlags())
-        .setPApplicationInfo(&appInfo)
-        .setEnabledExtensionCount(static_cast<uint32_t>(extensions.size()))
-        .setPpEnabledExtensionNames(extensions.data())
-        .setEnabledLayerCount(static_cast<uint32_t>(layers.size()))
-        .setPpEnabledLayerNames(layers.data());
 
-    // Create the Vulkan instance.
-    vk::Instance instance;
-    try {
-        instance = vk::createInstance(instInfo);
-    } catch(const std::exception& e) {
-        std::cout << "Could not create a Vulkan instance: " << e.what() << std::endl;
-        return 1;
-    }
 
-    // Create a Vulkan surface for rendering
-    VkSurfaceKHR c_surface;
-    if(!SDL_Vulkan_CreateSurface(window, static_cast<VkInstance>(instance), &c_surface)) {
-        std::cout << "Could not create a Vulkan surface." << std::endl;
-        return 1;
-    }
-    vk::SurfaceKHR surface(c_surface);
 
-    // This is where most initializtion for a program should be performed
+#define cstr const char*
+#define assres assert(res == VK_SUCCESS)
+#define ushort uint16_t
+#define uint uint32_t
+#define ulong uint64_t
+#define scuint static_cast<uint32_t>
+#define ARJET_SHADER_FLAG_NORMAL 1 // flag for telling my shaders this mesh uses normal maps
 
-    // Poll for user input.
-    bool stillRunning = true;
-    while(stillRunning) {
 
-        SDL_Event event;
-        while(SDL_PollEvent(&event)) {
 
-            switch(event.type) {
+//using glm::mat4;
+//using glm::mat3;
+//using glm::vec4;
+//using glm::vec3;
+//using glm::vec2;
 
-            case SDL_QUIT:
-                stillRunning = false;
-                break;
+using std::vector;
+using std::cout;
+using std::endl;
 
-            default:
-                // Do nothing.
-                break;
-            }
-        }
+bool mouseMode = true; //keeps track of if I should trap the mouse
 
-        SDL_Delay(10);
-    }
+Camera mainCamera;
 
-    // Clean up.
-    instance.destroySurfaceKHR(surface);
-    SDL_DestroyWindow(window);
-    SDL_Quit();
-    instance.destroy();
+Input input;
 
-    return 0;
+void mainLoop(Renderer &renderer);
+
+int main() {
+	vector<ShaderPath> shaderPaths;
+	shaderPaths.push_back(ShaderPath("Shaders/vert.spv", "Shaders/frag.spv"));
+	shaderPaths.push_back(ShaderPath("Shaders/lightV.spv", "Shaders/lightF.spv"));
+
+	Renderer renderer = Renderer(shaderPaths);
+	
+	uint tCount = 0; //keeps track of textures
+	Model testModel = Model(renderer, "models/nanosuit/scene.fbx", tCount);
+
+	renderer.models.push_back(&testModel);
+	
+	mainCamera = Camera();
+
+	Time::start();
+	mainLoop(renderer);
+	//Should clean up the rendererer here
+	return 0;
 }
+
+void mainLoop(Renderer &renderer) {
+bool stillRunning = true;
+while (stillRunning) {
+	//deltaTime and now. Might want to make these part of a time class
+	Time::resetDelta();
+
+	double swt;
+	Time::startStopwatch();
+	//SDL Input
+	SDL_Event event;
+	uint eventCount = 0; //FOR DEBUG
+	while (SDL_PollEvent(&event)) {
+
+		swt = Time::endStopwatch();
+		if (swt > 0.01) {
+			cout << "Pollevents Internal time: " << swt << endl;
+			cout << "Event count :" << eventCount << endl;
+		}
+		Time::startStopwatch();
+
+		++eventCount;
+		switch (event.type) {
+		case SDL_QUIT:
+			stillRunning = false;
+			break;
+		case SDL_WINDOWEVENT:
+			switch (event.window.event) {
+			case SDL_WINDOWEVENT_RESIZED:
+				renderer.framebufferResized = true; //Does nothing right now. Not a priority
+				break;
+			default:
+				break;
+			}
+		case SDL_KEYDOWN:
+		case SDL_KEYUP:
+			input.ProcessKey(&event.key);
+			break;
+		default:
+			break;
+		}
+		swt = Time::endStopwatch();
+		if (swt > 0.01) {
+			cout << "switchboard time: " << swt << endl;
+			cout << "Event count :" << eventCount << endl;
+		}
+		Time::startStopwatch();
+
+	}
+	swt = Time::endStopwatch();
+	if (swt > 0.01) {
+		cout << "Pollevents time: " << swt << endl;
+		cout << "Event count :" << eventCount << endl;
+	}
+
+	if (input.GetButtonDown("A")) {
+		mainCamera.ProcessKeyboard(LEFT, Time::deltaTime);
+	}if (input.GetButtonDown("S")) {
+		mainCamera.ProcessKeyboard(BACKWARD, Time::deltaTime);
+	}if (input.GetButtonDown("D")) {
+		mainCamera.ProcessKeyboard(RIGHT, Time::deltaTime);
+	}if (input.GetButtonDown("W")) {
+		mainCamera.ProcessKeyboard(FORWARD, Time::deltaTime);
+	}
+
+	//Cycle mouse mode vs keyboard only mode. Allows the mouse to be freed
+	if (input.OnPress("Escape")) {
+		if (mouseMode) {
+			mouseMode = false;
+			SDL_ShowCursor(1);
+		}
+		else {
+			mouseMode = true;
+			SDL_ShowCursor(0);
+			SDL_WarpMouseInWindow(renderer.window, 50, 50); //for some reason this doesn't work
+		}
+	}
+	//Mouse input
+	if (mouseMode) {
+		int xoff;
+		int yoff;
+		SDL_GetMouseState(&xoff, &yoff);
+		mainCamera.ProcessMouseMovement(xoff - 50, -1 * yoff + 50);
+		SDL_WarpMouseInWindow(renderer.window, 50, 50);
+	}
+	
+	
+	renderer.models[0]->position = vec3(0.0f, 0.0f, 0.0f);
+	renderer.models[0]->scale = vec3(0.3f, 0.3f, 0.3f);
+	renderer.models[0]->view = mainCamera.GetViewMatrix();//Should have this somewhere else. Likely in Model's per frame call
+
+	renderer.drawFrame();
+	
+}//close for while(stillRunning)
+}//close for mainLoop()

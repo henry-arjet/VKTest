@@ -1,6 +1,5 @@
 #pragma once
-//adapted from Vulkan Tutorial
-
+//Vertex class that includes position, normal, texture cordinates, tangent, and bitangent
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
