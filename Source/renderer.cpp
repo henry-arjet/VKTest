@@ -859,8 +859,8 @@ void Renderer::drawFrame() {
 
 	//update the uniform buffers. Should probably move this
 	for (Model* mo : models) {
-		for (Mesh* me : mo->meshes) {
-			me->updateUniformBuffer(cframe);
+		for (int j = 0; j < mo->meshes.size(); j++) {
+			mo->meshes[j]->updateUniformBuffer(cframe);
 
 		}
 	}

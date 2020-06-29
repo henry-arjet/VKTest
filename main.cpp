@@ -14,6 +14,7 @@
 #include <arjet/input.h>
 #include <arjet/camera.h>
 #include <arjet/time.h>
+#include <arjet/GameObject.h>
 
 //#define STB_IMAGE_IMPLEMENTATION
 //#include <stb_image.h>
@@ -52,21 +53,30 @@ Camera mainCamera;
 
 Input input;
 
+vector<GameObject> gameObjects; //container for all the gameObjects in the game
+
 void mainLoop(Renderer &renderer);
 
 int main() {
+	//Universal uni; //just to initialize the class
+	//delete(&uni);
 	vector<ShaderPath> shaderPaths;
 	shaderPaths.push_back(ShaderPath("Shaders/vert.spv", "Shaders/frag.spv"));
 	shaderPaths.push_back(ShaderPath("Shaders/lightV.spv", "Shaders/lightF.spv"));
 
 	Renderer renderer = Renderer(shaderPaths);
-	
-	uint tCount = 0; //keeps track of textures
-	Model testModel = Model(renderer, "models/nanosuit/scene.fbx", tCount);
 
-	renderer.models.push_back(&testModel);
-	
+	gameObjects.push_back(GameObject());
+
 	mainCamera = Camera();
+	//Universal.viewMatrix must be a thing before I create models
+	Universal::viewMatrix = &mainCamera.GetViewMatrix();
+
+	uint tCount = 0; //keeps track of textures
+	gameObjects[0].components.push_back(new Model(gameObjects[0], renderer, "models/nanosuit/scene.fbx", tCount));
+
+	gameObjects[0].transform->scale(0.3f);
+
 
 	Time::start();
 	mainLoop(renderer);
@@ -77,7 +87,7 @@ int main() {
 void mainLoop(Renderer &renderer) {
 bool stillRunning = true;
 while (stillRunning) {
-	//deltaTime and now. Might want to make these part of a time class
+	//set deltaTime and now for this frame
 	Time::resetDelta();
 
 	double swt;
@@ -158,11 +168,9 @@ while (stillRunning) {
 		mainCamera.ProcessMouseMovement(xoff - 50, -1 * yoff + 50);
 		SDL_WarpMouseInWindow(renderer.window, 50, 50);
 	}
-	
-	
-	renderer.models[0]->position = vec3(0.0f, 0.0f, 0.0f);
-	renderer.models[0]->scale = vec3(0.3f, 0.3f, 0.3f);
-	renderer.models[0]->view = mainCamera.GetViewMatrix();//Should have this somewhere else. Likely in Model's per frame call
+
+	//Get the new camera position to Universal
+	*Universal::viewMatrix = mainCamera.GetViewMatrix();
 
 	renderer.drawFrame();
 	

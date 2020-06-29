@@ -108,7 +108,6 @@ public:
 		this->width = width;
 		this->height = height;
 		this->shaderPaths = paths;
-
 		initWindow();
 		initInstance();
 		createSurface();

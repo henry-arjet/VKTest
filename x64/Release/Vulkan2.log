@@ -1,37 +1,87 @@
-﻿  camera.cpp
+﻿  main.cpp
 C:\Users\Henry\Documents\VK2\Vulkan2\Include\arjet\shader.h(51,12): warning C4101: 'shaderIndex': unreferenced local variable
 C:\Users\Henry\Documents\VK2\Vulkan2\Include\arjet\mesh.h(69,1): warning C4267: '=': conversion from 'size_t' to 'uint32_t', possible loss of data
   The contents of <optional> are available only with C++17 or later.
+C:\Users\Henry\source\repos\VKTest\main.cpp(56,8): error C2065: 'GameObject': undeclared identifier
+C:\Users\Henry\source\repos\VKTest\main.cpp(56,1): error C2923: 'std::vector': 'GameObject' is not a valid template type argument for parameter '_Ty'
+C:\Users\Henry\source\repos\VKTest\main.cpp(56,1): error C2976: 'std::vector': too few template arguments
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.26.28801\include\vector(412): message : see declaration of 'std::vector'
+C:\Users\Henry\source\repos\VKTest\main.cpp(56,31): error C2133: 'gameObjects': unknown size
+C:\Users\Henry\source\repos\VKTest\main.cpp(56,20): error C2512: 'std::vector': no appropriate default constructor available
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.26.28801\include\vector(412,14): message : see declaration of 'std::vector'
+C:\Users\Henry\source\repos\VKTest\main.cpp(61,2): error C2065: 'Universal': undeclared identifier
+C:\Users\Henry\source\repos\VKTest\main.cpp(61,12): error C2146: syntax error: missing ';' before identifier 'uni'
+C:\Users\Henry\source\repos\VKTest\main.cpp(61,12): error C2065: 'uni': undeclared identifier
+C:\Users\Henry\source\repos\VKTest\main.cpp(69,24): error C3861: 'GameObject': identifier not found
+C:\Users\Henry\source\repos\VKTest\main.cpp(73,24): error C2653: 'Universal': is not a class or namespace name
+C:\Users\Henry\source\repos\VKTest\main.cpp(73,13): error C2065: 'viewMatrix': undeclared identifier
+C:\Users\Henry\source\repos\VKTest\main.cpp(76,15): error C2678: binary '[': no operator found which takes a left-hand operand of type 'std::vector' (or there is no acceptable conversion)
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.26.28801\include\vector(1507,27): message : could be 'const _Ty &std::vector<_Ty,_Alloc>::operator [](const allocator_traits<allocator_traits<_Alloc>::rebind_alloc<_Ty>>::size_type) noexcept const'
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.26.28801\include\vector(1497,21): message : or       '_Ty &std::vector<_Ty,_Alloc>::operator [](const allocator_traits<allocator_traits<_Alloc>::rebind_alloc<_Ty>>::size_type) noexcept'
+C:\Users\Henry\source\repos\VKTest\main.cpp(76,15): message : while trying to match the argument list '(std::vector, int)'
+C:\Users\Henry\source\repos\VKTest\main.cpp(76,61): error C2678: binary '[': no operator found which takes a left-hand operand of type 'std::vector' (or there is no acceptable conversion)
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.26.28801\include\vector(1507,27): message : could be 'const _Ty &std::vector<_Ty,_Alloc>::operator [](const allocator_traits<allocator_traits<_Alloc>::rebind_alloc<_Ty>>::size_type) noexcept const'
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.26.28801\include\vector(1497,21): message : or       '_Ty &std::vector<_Ty,_Alloc>::operator [](const allocator_traits<allocator_traits<_Alloc>::rebind_alloc<_Ty>>::size_type) noexcept'
+C:\Users\Henry\source\repos\VKTest\main.cpp(76,61): message : while trying to match the argument list '(std::vector, int)'
+C:\Users\Henry\source\repos\VKTest\main.cpp(141,42): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+C:\Users\Henry\source\repos\VKTest\main.cpp(143,46): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+C:\Users\Henry\source\repos\VKTest\main.cpp(145,43): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+C:\Users\Henry\source\repos\VKTest\main.cpp(147,45): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+C:\Users\Henry\source\repos\VKTest\main.cpp(167,56): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+C:\Users\Henry\source\repos\VKTest\main.cpp(167,40): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+  GameObject.cpp
+C:\Users\Henry\source\repos\VKTest\source\GameObject.cpp(4,23): error C2653: 'GameObject': is not a class or namespace name
+C:\Users\Henry\source\repos\VKTest\source\GameObject.cpp(5,7): error C2065: 'Component': undeclared identifier
+C:\Users\Henry\source\repos\VKTest\source\GameObject.cpp(5,18): error C2065: 'c': undeclared identifier
+C:\Users\Henry\source\repos\VKTest\source\GameObject.cpp(5,20): error C2143: syntax error: missing ';' before ':'
+C:\Users\Henry\source\repos\VKTest\source\GameObject.cpp(5,22): error C2065: 'components': undeclared identifier
+C:\Users\Henry\source\repos\VKTest\source\GameObject.cpp(5,32): error C2143: syntax error: missing ';' before ')'
+C:\Users\Henry\source\repos\VKTest\source\GameObject.cpp(6,3): error C2065: 'c': undeclared identifier
   mesh.cpp
 C:\Users\Henry\Documents\VK2\Vulkan2\Include\arjet\shader.h(51,12): warning C4101: 'shaderIndex': unreferenced local variable
   The contents of <optional> are available only with C++17 or later.
 C:\Users\Henry\Documents\VK2\Vulkan2\Include\arjet\mesh.h(69,1): warning C4267: '=': conversion from 'size_t' to 'uint32_t', possible loss of data
+C:\Users\Henry\source\repos\VKTest\Source\mesh.cpp(127,63): error C2039: 'gameObject': is not a member of 'Model'
+C:\Users\Henry\Documents\VK2\Vulkan2\Include\arjet\mesh.h(25): message : see declaration of 'Model'
+C:\Users\Henry\source\repos\VKTest\Source\mesh.cpp(127,19): error C2672: 'glm::translate': no matching overloaded function found
+C:\Users\Henry\source\repos\VKTest\Source\mesh.cpp(127,83): error C2780: 'glm::mat<4,4,T,Q> glm::translate(const glm::mat<4,4,T,Q> &,const glm::vec<3,T,Q> &)': expects 2 arguments - 1 provided
+C:\VulkanSDK\1.2.141.2\Third-Party\Include\glm\ext\matrix_transform.hpp(64): message : see declaration of 'glm::translate'
+C:\Users\Henry\source\repos\VKTest\Source\mesh.cpp(128,58): error C2039: 'gameObject': is not a member of 'Model'
+C:\Users\Henry\Documents\VK2\Vulkan2\Include\arjet\mesh.h(25): message : see declaration of 'Model'
+C:\Users\Henry\source\repos\VKTest\Source\mesh.cpp(128,19): error C2672: 'glm::scale': no matching overloaded function found
+C:\Users\Henry\source\repos\VKTest\Source\mesh.cpp(128,74): error C2780: 'glm::mat<4,4,T,Q> glm::scale(const glm::mat<4,4,T,Q> &,const glm::vec<3,T,Q> &)': expects 2 arguments - 1 provided
+C:\VulkanSDK\1.2.141.2\Third-Party\Include\glm\ext\matrix_transform.hpp(95): message : see declaration of 'glm::scale'
+C:\Users\Henry\source\repos\VKTest\Source\mesh.cpp(130,13): error C2100: illegal indirection
   model.cpp
 C:\Users\Henry\Documents\VK2\Vulkan2\Include\arjet\shader.h(51,12): warning C4101: 'shaderIndex': unreferenced local variable
   The contents of <optional> are available only with C++17 or later.
 C:\Users\Henry\Documents\VK2\Vulkan2\Include\arjet\mesh.h(69,1): warning C4267: '=': conversion from 'size_t' to 'uint32_t', possible loss of data
+C:\Users\Henry\source\repos\VKTest\Source\model.cpp(4,14): error C2065: 'GameObject': undeclared identifier
+C:\Users\Henry\source\repos\VKTest\Source\model.cpp(4,26): error C2065: 'gameObject': undeclared identifier
+C:\Users\Henry\source\repos\VKTest\Source\model.cpp(4,48): error C2065: 'r': undeclared identifier
+C:\Users\Henry\source\repos\VKTest\Source\model.cpp(4,38): error C2275: 'Renderer': illegal use of this type as an expression
+C:\Users\Henry\Documents\VK2\Vulkan2\Include\arjet\model.h(10): message : see declaration of 'Renderer'
+C:\Users\Henry\source\repos\VKTest\Source\model.cpp(4,51): error C2275: 'std::string': illegal use of this type as an expression
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.26.28801\include\xstring(4575): message : see declaration of 'std::string'
+C:\Users\Henry\source\repos\VKTest\Source\model.cpp(4,58): error C2059: syntax error: 'const'
+C:\Users\Henry\source\repos\VKTest\Source\model.cpp(4,98): error C2065: 'gameObject': undeclared identifier
+C:\Users\Henry\source\repos\VKTest\Source\model.cpp(4,108): error C4430: missing type specifier - int assumed. Note: C++ does not support default-int
+C:\Users\Henry\source\repos\VKTest\Source\model.cpp(4,120): error C2065: 'r': undeclared identifier
+C:\Users\Henry\source\repos\VKTest\Source\model.cpp(4,121): error C4430: missing type specifier - int assumed. Note: C++ does not support default-int
+C:\Users\Henry\source\repos\VKTest\Source\model.cpp(4,139): error C2065: 'tCount': undeclared identifier
+C:\Users\Henry\source\repos\VKTest\Source\model.cpp(4,145): error C4430: missing type specifier - int assumed. Note: C++ does not support default-int
+C:\Users\Henry\source\repos\VKTest\Source\model.cpp(4,147): error C2448: 'textureCounter': function-style initializer appears to be a function definition
   renderer.cpp
 C:\Users\Henry\Documents\VK2\Vulkan2\Include\arjet\shader.h(51,12): warning C4101: 'shaderIndex': unreferenced local variable
 C:\Users\Henry\Documents\VK2\Vulkan2\Include\arjet\mesh.h(69,1): warning C4267: '=': conversion from 'size_t' to 'uint32_t', possible loss of data
   The contents of <optional> are available only with C++17 or later.
-C:\Users\Henry\Documents\VK2\Vulkan2\Source\renderer.cpp(673,53): warning C4267: '=': conversion from 'size_t' to 'uint32_t', possible loss of data
-C:\Users\Henry\Documents\VK2\Vulkan2\Source\renderer.cpp(690,21): warning C4018: '<': signed/unsigned mismatch
-C:\Users\Henry\Documents\VK2\Vulkan2\Source\renderer.cpp(799,32): warning C4267: '=': conversion from 'size_t' to 'uint32_t', possible loss of data
-C:\Users\Henry\Documents\VK2\Vulkan2\Source\renderer.cpp(910,28): warning C4267: 'initializing': conversion from 'size_t' to 'uint32_t', possible loss of data
-C:\Users\Henry\Documents\VK2\Vulkan2\Source\renderer.cpp(942,95): warning C4267: 'argument': conversion from 'size_t' to 'uint32_t', possible loss of data
-  main.cpp
-C:\Users\Henry\Documents\VK2\Vulkan2\Include\arjet\shader.h(51,12): warning C4101: 'shaderIndex': unreferenced local variable
-C:\Users\Henry\Documents\VK2\Vulkan2\Include\arjet\mesh.h(69,1): warning C4267: '=': conversion from 'size_t' to 'uint32_t', possible loss of data
-  The contents of <optional> are available only with C++17 or later.
-C:\Users\Henry\Documents\VK2\Vulkan2\main.cpp(134,36): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-C:\Users\Henry\Documents\VK2\Vulkan2\main.cpp(136,40): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-C:\Users\Henry\Documents\VK2\Vulkan2\main.cpp(138,37): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-C:\Users\Henry\Documents\VK2\Vulkan2\main.cpp(140,39): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-C:\Users\Henry\Documents\VK2\Vulkan2\main.cpp(160,56): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
-C:\Users\Henry\Documents\VK2\Vulkan2\main.cpp(160,40): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
-  Generating code
-  3 of 1743 functions ( 0.2%) were compiled, the rest were copied from previous compilation.
-    0 functions were new in current compilation
-    13 functions had inline decision re-evaluated but remain unchanged
-  Finished generating code
-  Vulkan2.vcxproj -> C:\Users\Henry\Documents\VK2\Vulkan2\x64\Release\Vulkan2.exe
+C:\Users\Henry\source\repos\VKTest\Source\renderer.cpp(673,53): warning C4267: '=': conversion from 'size_t' to 'uint32_t', possible loss of data
+C:\Users\Henry\source\repos\VKTest\Source\renderer.cpp(690,21): warning C4018: '<': signed/unsigned mismatch
+C:\Users\Henry\source\repos\VKTest\Source\renderer.cpp(799,32): warning C4267: '=': conversion from 'size_t' to 'uint32_t', possible loss of data
+C:\Users\Henry\source\repos\VKTest\Source\renderer.cpp(910,28): warning C4267: 'initializing': conversion from 'size_t' to 'uint32_t', possible loss of data
+C:\Users\Henry\source\repos\VKTest\Source\renderer.cpp(942,95): warning C4267: 'argument': conversion from 'size_t' to 'uint32_t', possible loss of data
+  Universal.cpp
+C:\Users\Henry\source\repos\VKTest\source\Universal.cpp(2,5): error C2143: syntax error: missing ';' before '*'
+C:\Users\Henry\source\repos\VKTest\source\Universal.cpp(2,5): error C4430: missing type specifier - int assumed. Note: C++ does not support default-int
+C:\Users\Henry\source\repos\VKTest\source\Universal.cpp(2,28): error C2653: 'Universal': is not a class or namespace name
+C:\Users\Henry\source\repos\VKTest\source\Universal.cpp(2,28): error C4430: missing type specifier - int assumed. Note: C++ does not support default-int

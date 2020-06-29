@@ -1,4 +1,5 @@
-#include "arjet/mesh.h"
+#include <arjet/mesh.h>
+#include <arjet/GameObject.h>
 
 void Mesh::createVertexBuffer() {//creates a VK vertex buffer from the vertices data it has
 	VkDeviceSize bufferSize = sizeof(vertices[0]) * vertices.size();
@@ -123,14 +124,12 @@ void Mesh::createDescriptorSets() {
 }
 
 void Mesh::updateUniformBuffer(uint currentFrame) {
-	ubo.model = glm::translate(mat4(1.0f), daddyModel->position);
-	ubo.model = glm::scale(ubo.model, daddyModel->scale);
+	ubo.model = glm::translate(mat4(1.0f), daddyModel->gameObject.transform->position); //that's a bit of a mess
+	ubo.model = glm::scale(ubo.model, daddyModel->gameObject.transform->size);
 
-	ubo.view = daddyModel->view; //If I understand c++ correctly this should just copy
+	ubo.view = *daddyModel->view; //If I understand c++ correctly this should just copy
 
 	ubo.normalMatrix = mat3(glm::transpose(glm::inverse(ubo.model)));
-
-	ubo.featureFlags = featureFlags; //TODO move this somewhere else
 
 	void* data;
 	vkMapMemory(renderer.device, uniformBuffersMemory[currentFrame], 0, sizeof(ubo), 0, &data);

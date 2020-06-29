@@ -1,11 +1,11 @@
 ﻿  main.cpp
-C:\Users\Henry\Documents\VK2\Vulkan2\Include\arjet\shader.h(51,12): warning C4101: 'shaderIndex': unreferenced local variable
-C:\Users\Henry\Documents\VK2\Vulkan2\Include\arjet\mesh.h(69,1): warning C4267: '=': conversion from 'size_t' to 'uint32_t', possible loss of data
+C:\Users\Henry\source\repos\VKTest\Include\arjet\shader.h(51,12): warning C4101: 'shaderIndex': unreferenced local variable
+C:\Users\Henry\source\repos\VKTest\Include\arjet\mesh.h(69,1): warning C4267: '=': conversion from 'size_t' to 'uint32_t', possible loss of data
   The contents of <optional> are available only with C++17 or later.
-C:\Users\Henry\Documents\VK2\Vulkan2\main.cpp(132,42): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-C:\Users\Henry\Documents\VK2\Vulkan2\main.cpp(134,46): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-C:\Users\Henry\Documents\VK2\Vulkan2\main.cpp(136,43): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-C:\Users\Henry\Documents\VK2\Vulkan2\main.cpp(138,45): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-C:\Users\Henry\Documents\VK2\Vulkan2\main.cpp(158,56): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
-C:\Users\Henry\Documents\VK2\Vulkan2\main.cpp(158,40): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
-  Vulkan2.vcxproj -> C:\Users\Henry\Documents\VK2\Vulkan2\x64\Debug2\Vulkan2.exe
+C:\Users\Henry\source\repos\VKTest\main.cpp(142,42): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+C:\Users\Henry\source\repos\VKTest\main.cpp(144,46): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+C:\Users\Henry\source\repos\VKTest\main.cpp(146,43): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+C:\Users\Henry\source\repos\VKTest\main.cpp(148,45): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+C:\Users\Henry\source\repos\VKTest\main.cpp(168,56): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+C:\Users\Henry\source\repos\VKTest\main.cpp(168,40): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+  Vulkan2.vcxproj -> C:\Users\Henry\source\repos\VKTest\x64\Debug2\Vulkan2.exe

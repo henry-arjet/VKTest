@@ -197,22 +197,28 @@
   <ItemGroup>
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Source\camera.cpp" />
+    <ClCompile Include="source\GameObject.cpp" />
     <ClCompile Include="Source\mesh.cpp" />
     <ClCompile Include="Source\model.cpp" />
     <ClCompile Include="Source\renderer.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="source\Universal.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Include\arjet\camera.h" />
+    <ClInclude Include="Include\arjet\Component.h" />
+    <ClInclude Include="Include\arjet\GameObject.h" />
     <ClInclude Include="Include\arjet\input.h" />
     <ClInclude Include="Include\arjet\mesh.h" />
     <ClInclude Include="Include\arjet\model.h" />
     <ClInclude Include="include\Arjet\shader.h" />
     <ClInclude Include="Include\Arjet\renderer.h" />
     <ClInclude Include="Include\arjet\time.h" />
+    <ClInclude Include="Include\arjet\Transform.h" />
     <ClInclude Include="Include\arjet\UBO.h" />
+    <ClInclude Include="Include\arjet\Universal.h" />
     <ClInclude Include="include\Arjet\vertex.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
@@ -242,6 +248,6 @@ $(LocalDebuggerEnvironment)</LocalDebuggerEnvironment>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug2|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>C:\Users\Henry\Documents\VK2\Vulkan2\Include;$(IncludePath)</IncludePath>
+    <IncludePath>C:\Users\Henry\source\repos\VKTest\Include;$(IncludePath)</IncludePath>
   </PropertyGroup>
 </Project>

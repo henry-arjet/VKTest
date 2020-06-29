@@ -1,4 +1,12 @@
 #include "arjet/model.h"
+#include <arjet/Universal.h>
+
+Model::Model(GameObject& gameObject, Renderer& r, string const& path, uint& tCount) : gameObject(gameObject), renderer(r), textureCounter(tCount) {
+	view = Universal::viewMatrix;
+	loadModel(path);
+	createSecondaryBuffers();
+	r.models.push_back(this);
+}
 void Model::loadModel(string const& path) {
 	Assimp::Importer importer;
 	const aiScene* scene = importer.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_CalcTangentSpace);

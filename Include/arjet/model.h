@@ -1,5 +1,7 @@
 #pragma once
 #include<arjet/mesh.h>
+#include<arjet/Component.h>
+
 #include<assimp/Importer.hpp>
 #include<assimp/scene.h>
 #include<assimp/postprocess.h>
@@ -12,20 +14,18 @@ class Renderer;
 void TextureFromFile(Renderer& renderer, uint count, const char* path, const string& directory);
 
 
-class Model {
+class Model : public Component {
 public:
 	bool draw = true;
 	vec3 position;
 	vec3 scale;
-	mat4& view = mat4(1); //Point each model to a universal view vec3
+	mat4* view; //Point each model to a universal view vec3
 	vector<VkCommandBuffer> buffers;
-	//functions
-	Model(Renderer& r, string const& path, /*uint& mCountmesh counter. How many meshes have been processed. Don't think I need this,*/
-	  uint& tCount/*texture counter*/) : renderer(r), textureCounter(tCount) {
-		loadModel(path);
-		createSecondaryBuffers();
-	}
 	vector<Mesh*> meshes;
+
+	GameObject& gameObject;
+	//functions
+	Model(GameObject& gameObject, Renderer& r, string const& path, uint& tCount);
 
 private:
 	string directory;
