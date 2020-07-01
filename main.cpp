@@ -15,6 +15,7 @@
 #include <arjet/camera.h>
 #include <arjet/time.h>
 #include <arjet/GameObject.h>
+#include <arjet/SceneLoader.h>
 
 //#define STB_IMAGE_IMPLEMENTATION
 //#include <stb_image.h>
@@ -58,8 +59,12 @@ vector<GameObject> gameObjects; //container for all the gameObjects in the game
 void mainLoop(Renderer &renderer);
 
 int main() {
-	//Universal uni; //just to initialize the class
-	//delete(&uni);
+	Universal::input = &input;
+	Universal::gameObjects = &gameObjects;
+
+	SceneLoader loader;
+	loader.load();
+
 	vector<ShaderPath> shaderPaths;
 	shaderPaths.push_back(ShaderPath("Shaders/vert.spv", "Shaders/frag.spv"));
 	shaderPaths.push_back(ShaderPath("Shaders/lightV.spv", "Shaders/lightF.spv"));
@@ -90,19 +95,10 @@ while (stillRunning) {
 	//set deltaTime and now for this frame
 	Time::resetDelta();
 
-	double swt;
-	Time::startStopwatch();
 	//SDL Input
 	SDL_Event event;
 	uint eventCount = 0; //FOR DEBUG
 	while (SDL_PollEvent(&event)) {
-
-		swt = Time::endStopwatch();
-		if (swt > 0.01) {
-			cout << "Pollevents Internal time: " << swt << endl;
-			cout << "Event count :" << eventCount << endl;
-		}
-		Time::startStopwatch();
 
 		++eventCount;
 		switch (event.type) {
@@ -124,19 +120,9 @@ while (stillRunning) {
 		default:
 			break;
 		}
-		swt = Time::endStopwatch();
-		if (swt > 0.01) {
-			cout << "switchboard time: " << swt << endl;
-			cout << "Event count :" << eventCount << endl;
-		}
-		Time::startStopwatch();
+	}
 
-	}
-	swt = Time::endStopwatch();
-	if (swt > 0.01) {
-		cout << "Pollevents time: " << swt << endl;
-		cout << "Event count :" << eventCount << endl;
-	}
+	
 
 	if (input.GetButtonDown("A")) {
 		mainCamera.ProcessKeyboard(LEFT, Time::deltaTime);

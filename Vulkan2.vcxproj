@@ -204,6 +204,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="Source\SceneLoader.cpp" />
     <ClCompile Include="source\Universal.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -213,6 +214,7 @@
     <ClInclude Include="Include\arjet\input.h" />
     <ClInclude Include="Include\arjet\mesh.h" />
     <ClInclude Include="Include\arjet\model.h" />
+    <ClInclude Include="Include\arjet\SceneLoader.h" />
     <ClInclude Include="include\Arjet\shader.h" />
     <ClInclude Include="Include\Arjet\renderer.h" />
     <ClInclude Include="Include\arjet\time.h" />
@@ -234,7 +236,7 @@ $(LocalDebuggerEnvironment)</LocalDebuggerEnvironment>
     <LocalDebuggerEnvironment>PATH=$(VULKAN_SDK)\Third-Party\Bin
 $(LocalDebuggerEnvironment)</LocalDebuggerEnvironment>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
-    <IncludePath>C:\Users\Henry\Documents\VK2\Vulkan2\Include;$(IncludePath)</IncludePath>
+    <IncludePath>C:\Users\Henry\source\repos\VKTest\Include;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LocalDebuggerEnvironment>PATH=$(VULKAN_SDK)\Third-Party\Bin32
