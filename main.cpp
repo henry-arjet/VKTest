@@ -1,6 +1,5 @@
 //This entire file exists only because I don't know how to move main()
-
-
+//But hey, it works
 
 // Tell SDL not to mess with main()
 #define SDL_MAIN_HANDLED
@@ -10,6 +9,5 @@
 
 int main() {
 	int i = Universal::run();
-	exit(0);
-	return 0;
+	return i;
 }

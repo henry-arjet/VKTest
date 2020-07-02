@@ -1,6 +1,5 @@
 #include<arjet/Universal.h>
 
-#define _ITERATOR_DEBUG_LEVEL 0
 //For some reason, it crashes on exit if I don't have this
 
 mat4 Universal::viewMatrix; //reference to the main camera's view matrix
@@ -31,7 +30,6 @@ int Universal::run() {
 
 	Time::start();
 	mainLoop();
-	//Should clean up the rendererer here
 	return 0;
 }
 void Universal::mainLoop() {

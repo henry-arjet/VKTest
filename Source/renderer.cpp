@@ -986,6 +986,7 @@ void Renderer::cleanupSwapChain() {
 }
 
 void Renderer::cleanup(){
+	vkDeviceWaitIdle(device);
 	cleanupSwapChain();
 
 	vkDestroySampler(device, textureSampler, nullptr);
@@ -1026,6 +1027,5 @@ void Renderer::cleanup(){
 }
 
 Renderer::~Renderer() {
-	cout << "TEST RENDERER DESTRUCTOR" << endl;
 	cleanup();
 }
