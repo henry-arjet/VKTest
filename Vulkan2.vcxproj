@@ -173,6 +173,7 @@
       <AdditionalDependencies>assimp-vc142-mtd.lib;vulkan-1.lib;SDL2.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(VULKAN_SDK)\Lib;$(VULKAN_SDK)\Third-Party\Bin;C:\Users\Henry\Documents\VK2\Vulkan2\Libs;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <EntryPointSymbol>mainCRTStartup</EntryPointSymbol>
+      <LargeAddressAware>true</LargeAddressAware>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug2|x64'">
@@ -205,6 +206,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="Source\SceneLoader.cpp" />
+    <ClCompile Include="Source\time.cpp" />
     <ClCompile Include="source\Universal.cpp" />
   </ItemGroup>
   <ItemGroup>

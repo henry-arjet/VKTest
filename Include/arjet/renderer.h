@@ -103,8 +103,11 @@ public:
 
 	//just to make sure we're all on the same page
 	uint currentFrame = 0;
-
+	Renderer() {}
 	Renderer(vector<ShaderPath> paths, int width = 1600, int height = 900) {
+		init(paths, width, height);
+	}
+	void init(vector<ShaderPath> paths, int width = 1600, int height = 900) {
 		this->width = width;
 		this->height = height;
 		this->shaderPaths = paths;
@@ -201,4 +204,10 @@ public:
 	void drawFrame();
 
 	void recreateCommandBuffer();//Recreates the master buffer
+
+	void cleanupSwapChain();
+
+	void cleanup();
+
+	~Renderer();
 };

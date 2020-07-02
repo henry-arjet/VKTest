@@ -1,5 +1,8 @@
 #pragma once
 //loads the scene from a file
+//This file format works by flags. There will be a all caps flag that determines the section (eg game objects, shaders)
+//Each line will be processed in the manner proscribed to this section until another section flag comes up
+//There will also be inline sub flags that specify how the rest of the words in the line are to be applied
 #include <iostream>	
 #include <fstream>
 #include <vector>

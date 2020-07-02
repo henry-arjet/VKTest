@@ -2,7 +2,7 @@
 #include <arjet/Universal.h>
 
 Model::Model(GameObject& gameObject, Renderer& r, string const& path, uint& tCount) : gameObject(gameObject), renderer(r), textureCounter(tCount) {
-	view = Universal::viewMatrix;
+	view = &Universal::viewMatrix;
 	loadModel(path);
 	createSecondaryBuffers();
 	r.models.push_back(this);

@@ -72,11 +72,12 @@ public:
 	}
 
 	void updateUniformBuffer(uint currentImage);//Updates the uniform buffer currently about to be drawn
-private:
-	uint indicesSize = UINT32_MAX;
+
 	VkDeviceMemory vertexBufferMemory;
 	VkDeviceMemory indexBufferMemory;
 	vector<VkDeviceMemory> uniformBuffersMemory;
+private:
+	uint indicesSize = UINT32_MAX;
 
 
 	vector<Vertex> vertices;

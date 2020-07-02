@@ -1,4 +1,21 @@
 #pragma once
+#include <SDL2/SDL_syswm.h>
+#include <SDL2/SDL_vulkan.h>
+#include <SDL2/SDL.h>
+#include <iostream>
+#include <vector>
+
+#define cstr const char*
+#define assres assert(res == VK_SUCCESS)
+#define ushort uint16_t
+#define uint uint32_t
+#define ulong uint64_t
+#define scuint static_cast<uint32_t>
+#define ARJET_SHADER_FLAG_NORMAL 1 // flag for telling my shaders this mesh uses normal maps
+
+using std::vector;
+using std::cout;
+using std::endl;
 
 class Time {
 public:
@@ -28,9 +45,3 @@ private:
 	static ulong lastTime, thisTime, startTime, stopwatchStart;
 };
 
-double Time::deltaTime;
-double Time::now;
-ulong Time::lastTime;
-ulong Time::thisTime;
-ulong Time::startTime;
-ulong Time::stopwatchStart;
