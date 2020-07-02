@@ -1,4 +1,8 @@
-Batter my heart, three personed god for you
-As yet but knock, breathe, shine and seek to mend
-That I may rise and stand, o'erthrow me and bend
-Your force to break, blow, burn and make me new
+SHADERS
+Shaders/vert.spv, Shaders/frag.spv
+Shaders/lightV.spv, Shaders/lightF.spv
+OBJECTS
+I, like an ursurped town to another due
+Labor to admit you, but oh to no end!
+Reason, your viceroy in me, me should defend
+But is captive, and proves weak or untrue

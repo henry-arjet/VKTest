@@ -10,11 +10,9 @@ bool Universal::mouseMode = true;
 Camera Universal::mainCamera;
 
 int Universal::run() {
-	vector<ShaderPath> shaderPaths;
-	shaderPaths.push_back(ShaderPath("Shaders/vert.spv", "Shaders/frag.spv"));
-	shaderPaths.push_back(ShaderPath("Shaders/lightV.spv", "Shaders/lightF.spv"));
+	SceneLoader loader;
+	loader.load();
 
-	renderer.init(shaderPaths);
 	
 	gameObjects.push_back(GameObject());
 

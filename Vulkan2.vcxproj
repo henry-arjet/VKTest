@@ -225,6 +225,9 @@
     <ClInclude Include="Include\arjet\Universal.h" />
     <ClInclude Include="include\Arjet\vertex.h" />
   </ItemGroup>
+  <ItemGroup>
+    <Text Include="Scenes\test.txt" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

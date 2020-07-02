@@ -8,7 +8,16 @@
 #include <vector>
 #include <string>
 
+#define cstr const char*
+#define assres assert(res == VK_SUCCESS)
+#define ushort uint16_t
+#define uint uint32_t
+#define ulong uint64_t
+#define scuint static_cast<uint32_t>
+
 using std::vector;
+using std::cout;
+using std::endl;
 using std::string;
 
 
@@ -16,34 +25,23 @@ class SceneLoader
 {
 	std::ifstream sceneFile;
 public:
-	void load(){
-		vector<vector<string>> words = intakeLines();
-
-	}
+	void load();
 private:
-	vector<vector<string>> intakeLines(){ //Opens the file, reads all the words into a 2d vector split by lines
-		sceneFile.open("Scenes/test.txt");
-		string line;
-		vector<vector<string>> ret;
-		while (getline(sceneFile, line)) {
-			vector<string> pb = getWords(line);
-			ret.push_back(pb);
-		}
-		sceneFile.close();
-		return ret;
-	}
+	vector<vector<string>> words;
 
-	vector<string> getWords(string line, string delimiter = " ") {
-		vector<string> ret;
-		size_t last = 0;
-		size_t next = 0;
-		while ((next = line.find(delimiter, last)) != string::npos) {
-			ret.push_back(line.substr(last, next - last));
-			last = next + 1;
-		}
-		//return the final word
-		ret.push_back(line.substr(last, string::npos));
-		return ret;
-	}
+	ulong processShaders(ulong i);
+
+	enum sectionFlag {
+		NONE,
+		SHADERS,
+		OBJECTS,
+		END
+	};
+	sectionFlag sectionFlagLookup(const string& str);
+
+
+	vector<vector<string>> intakeLines(); //Opens the file, reads all the words into a 2d vector split by lines
+		
+	vector<string> getWords(string line, string delimiter = ", ");//Gets the words in a line
 };
 
