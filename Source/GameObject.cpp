@@ -2,7 +2,8 @@
 #include <arjet/GameObject.h>
 
 void GameObject::start() {
-	for (Component* c : components) { //Call start for every component
-		c->start();
+
+	for (int i = 0; i < components.size(); i++) { //Call start for every component
+		components[i]->start();
 	}
 }

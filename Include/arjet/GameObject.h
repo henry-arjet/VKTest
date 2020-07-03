@@ -22,12 +22,17 @@ class Transform;
 
 class GameObject{
 public:
-	vector<Component*> components;
-	Transform* transform; //Every gameObject will have a transform
-	GameObject(){
-		transform = new Transform(); //initializes to 0s	
+	vector<std::unique_ptr<Component>> components;
+	Transform transform; //Every gameObject will have a transform
+	string name;
+	GameObject(string name) {	
+		this->name = name;
+	}
+	GameObject(){//depreciated
 	}
 
 	void start();
+
+	
 };
 

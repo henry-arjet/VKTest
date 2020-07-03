@@ -787,7 +787,7 @@ void Renderer::createTextureImageView(int index) {
 	textureImageViews[index] = createImageView(textureImages[index], VK_FORMAT_R8G8B8A8_SRGB);
 }
 
-vector<VkCommandBuffer> Renderer::createCommandBuffersModel(vector<Mesh*> modelMeshes) { //creates the draw calls for a model
+vector<VkCommandBuffer> Renderer::createCommandBuffersModel(vector<Mesh>* modelMeshes) { //creates the draw calls for a model
 
 	size_t s = swapchainImages.size();
 	vector<VkCommandBuffer> buffers(s);
@@ -821,13 +821,13 @@ vector<VkCommandBuffer> Renderer::createCommandBuffersModel(vector<Mesh*> modelM
 		assres;
 		vkCmdBindPipeline(buffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipelines[0]); //HARDCODED TO BASE SHADER for now
 
-		for (int k = 0; k < modelMeshes.size(); k++) { //For each mesh
+		for (int k = 0; k < (*modelMeshes).size(); k++) { //For each mesh
 			VkDeviceSize offsets[] = { 0 };
-			VkBuffer vertexBufferArray[] = { modelMeshes[k]->vertexBuffer };
+			VkBuffer vertexBufferArray[] = { (*modelMeshes)[k].vertexBuffer };
 			vkCmdBindVertexBuffers(buffers[i], 0, 1, vertexBufferArray, offsets);
-			vkCmdBindIndexBuffer(buffers[i], modelMeshes[k]->indexBuffer, 0, VK_INDEX_TYPE_UINT32);
-			vkCmdBindDescriptorSets(buffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &modelMeshes[k]->descriptorSets[i], 0, NULL);
-			vkCmdDrawIndexed(buffers[i], modelMeshes[k]->getIndicesSize(), 1, 0, 0, 0);
+			vkCmdBindIndexBuffer(buffers[i], (*modelMeshes)[k].indexBuffer, 0, VK_INDEX_TYPE_UINT32);
+			vkCmdBindDescriptorSets(buffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &(*modelMeshes)[k].descriptorSets[i], 0, NULL); // &(* is something I never want to write again
+			vkCmdDrawIndexed(buffers[i], (*modelMeshes)[k].getIndicesSize(), 1, 0, 0, 0);
 		}
 		res = vkEndCommandBuffer(buffers[i]);
 		assres;
@@ -851,58 +851,58 @@ void Renderer::drawFrame() {
 	if (imagesInFlight[imageIndex] != NULL) {
 		vkWaitForFences(device, 1, &imagesInFlight[imageIndex], VK_TRUE, UINT64_MAX); //wait didn't I just do this? need to recheck the tutorial
 	}
-imagesInFlight[imageIndex] = inFlightFences[currentFrame];
+	imagesInFlight[imageIndex] = inFlightFences[currentFrame];
 
 
 
-uint cframe = currentFrame;
+	uint cframe = currentFrame;
 
-//update the uniform buffers. Should probably move this
-for (Model* mo : models) {
-	for (int j = 0; j < mo->meshes.size(); j++) {
-		mo->meshes[j]->updateUniformBuffer(cframe);
+	//update the uniform buffers. Should probably move this
+	for (Model* mo : models) {
+		for (int j = 0; j < mo->meshes.size(); j++) {
+			mo->meshes[j].updateUniformBuffer(cframe);
 
+		}
 	}
-}
 
-//Create the final command buffer
-recreateCommandBuffer();
+	//Create the final command buffer
+	recreateCommandBuffer();
 
-VkSubmitInfo submitInfo = {};
-submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-VkSemaphore waitSemaphores[] = { imageAvailableSemaphores[currentFrame] };
-VkPipelineStageFlags waitStages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
-submitInfo.waitSemaphoreCount = 1;
-submitInfo.pWaitSemaphores = waitSemaphores;
-submitInfo.pWaitDstStageMask = waitStages;
-submitInfo.commandBufferCount = 1;
-submitInfo.pCommandBuffers = &commandBuffers[cframe];
-VkSemaphore signalSemaphores[] = { renderFinishedSemaphores[cframe] };
-submitInfo.signalSemaphoreCount = 1;
-submitInfo.pSignalSemaphores = signalSemaphores;
-vkResetFences(device, 1, &inFlightFences[cframe]);
-res = vkQueueSubmit(graphicsQueue, 1, &submitInfo, inFlightFences[cframe]);
-assres;
+	VkSubmitInfo submitInfo = {};
+	submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+	VkSemaphore waitSemaphores[] = { imageAvailableSemaphores[currentFrame] };
+	VkPipelineStageFlags waitStages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
+	submitInfo.waitSemaphoreCount = 1;
+	submitInfo.pWaitSemaphores = waitSemaphores;
+	submitInfo.pWaitDstStageMask = waitStages;
+	submitInfo.commandBufferCount = 1;
+	submitInfo.pCommandBuffers = &commandBuffers[cframe];
+	VkSemaphore signalSemaphores[] = { renderFinishedSemaphores[cframe] };
+	submitInfo.signalSemaphoreCount = 1;
+	submitInfo.pSignalSemaphores = signalSemaphores;
+	vkResetFences(device, 1, &inFlightFences[cframe]);
+	res = vkQueueSubmit(graphicsQueue, 1, &submitInfo, inFlightFences[cframe]);
+	assres;
 
-VkPresentInfoKHR presentInfo = {};
-presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
-presentInfo.waitSemaphoreCount = 1;
-presentInfo.pWaitSemaphores = signalSemaphores;
-VkSwapchainKHR swapchains[] = { swapchain };
-presentInfo.swapchainCount = 1;
-presentInfo.pSwapchains = swapchains;
-presentInfo.pImageIndices = &imageIndex;
+	VkPresentInfoKHR presentInfo = {};
+	presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+	presentInfo.waitSemaphoreCount = 1;
+	presentInfo.pWaitSemaphores = signalSemaphores;
+	VkSwapchainKHR swapchains[] = { swapchain };
+	presentInfo.swapchainCount = 1;
+	presentInfo.pSwapchains = swapchains;
+	presentInfo.pImageIndices = &imageIndex;
 
-res = vkQueuePresentKHR(graphicsQueue, &presentInfo);//remember we asserted that graphicsQueue = presentQueue
-if (res == VK_ERROR_OUT_OF_DATE_KHR || res == VK_SUBOPTIMAL_KHR || framebufferResized) {
-	framebufferResized = false;
-	//recreateSwapchain(); TODO
-	return;
-}
-else if (res != VK_SUCCESS) {
-	throw std::runtime_error("failed to present swap chain image");
-}
-currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
+	res = vkQueuePresentKHR(graphicsQueue, &presentInfo);//remember we asserted that graphicsQueue = presentQueue
+	if (res == VK_ERROR_OUT_OF_DATE_KHR || res == VK_SUBOPTIMAL_KHR || framebufferResized) {
+		framebufferResized = false;
+		//recreateSwapchain(); TODO
+		return;
+	}
+	else if (res != VK_SUCCESS) {
+		throw std::runtime_error("failed to present swap chain image");
+	}
+	currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
 }
 
 
@@ -977,10 +977,10 @@ void Renderer::cleanupSwapChain() {
 	for (Model* mo : models) {
 		for (int j = 0; j < mo->meshes.size(); j++) {
 			for (size_t k = 0; k < swapchainImages.size(); k++) {
-				vkDestroyBuffer(device, mo->meshes[j]->uniformBuffers[k], NULL);
-				vkFreeMemory(device, mo->meshes[j]->uniformBuffersMemory[k], NULL);
+				vkDestroyBuffer(device, mo->meshes[j].uniformBuffers[k], NULL);
+				vkFreeMemory(device, mo->meshes[j].uniformBuffersMemory[k], NULL);
 			}
-			vkDestroyDescriptorPool(device, mo->meshes[j]->descriptorPool, NULL);
+			vkDestroyDescriptorPool(device, mo->meshes[j].descriptorPool, NULL);
 		}
 	}
 }
@@ -1001,11 +1001,11 @@ void Renderer::cleanup(){
 
 	for (Model* mo : models) {
 		for (int j = 0; j < mo->meshes.size(); j++) {
-			vkDestroyBuffer(device, mo->meshes[j]->indexBuffer, NULL);
-			vkFreeMemory(device, mo->meshes[j]->indexBufferMemory, NULL);
+			vkDestroyBuffer(device, mo->meshes[j].indexBuffer, NULL);
+			vkFreeMemory(device, mo->meshes[j].indexBufferMemory, NULL);
 
-			vkDestroyBuffer(device, mo->meshes[j]->vertexBuffer, NULL);
-			vkFreeMemory(device, mo->meshes[j]->vertexBufferMemory, NULL);
+			vkDestroyBuffer(device, mo->meshes[j].vertexBuffer, NULL);
+			vkFreeMemory(device, mo->meshes[j].vertexBufferMemory, NULL);
 		}
 	}
 

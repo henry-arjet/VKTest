@@ -21,7 +21,7 @@ public:
 	vec3 scale;
 	mat4* view; //Point each model to a universal view vec3
 	vector<VkCommandBuffer> buffers;
-	vector<Mesh*> meshes;
+	vector<Mesh> meshes;
 
 	GameObject& gameObject;
 	//functions
@@ -37,7 +37,7 @@ private:
 	
 	void loadModel(string const& path); //Opens the scene and calls processNode() for the root node
 	void processNode(aiNode* node, const aiScene* scene); //Recursively processes all nodes
-	Mesh* processMesh(aiMesh* mesh, const aiScene* scene);
+	Mesh processMesh(aiMesh* mesh, const aiScene* scene);
 	vector<Texture> loadMaterialTextures(aiMaterial* mat, aiTextureType type, string typeName);
 	void createSecondaryBuffers();
 };

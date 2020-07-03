@@ -10,20 +10,21 @@ bool Universal::mouseMode = true;
 Camera Universal::mainCamera;
 
 int Universal::run() {
+	mainCamera = Camera();
+	//Universal.viewMatrix must be a thing before I create models
+	Universal::viewMatrix = mainCamera.GetViewMatrix(); 
+	
 	SceneLoader loader;
 	loader.load();
 
 	
-	gameObjects.push_back(GameObject());
+	//gameObjects.push_back(GameObject());
 
-	mainCamera = Camera();
-	//Universal.viewMatrix must be a thing before I create models
-	Universal::viewMatrix = mainCamera.GetViewMatrix();
 
-	uint tCount = 0; //keeps track of textures
-	gameObjects[0].components.push_back(new Model(gameObjects[0], renderer, "models/nanosuit/scene.fbx", tCount));
+	//uint tCount = 0; //keeps track of textures
+	//gameObjects[0].components.push_back(new Model(gameObjects[0], renderer, "models/nanosuit/scene.fbx", tCount));
 
-	gameObjects[0].transform->scale(0.3f);
+	//gameObjects[0].transform->scale(0.3f);
 
 
 	Time::start();

@@ -198,7 +198,7 @@ public:
 
 	void createRenderPass();//again only one render pass
 
-	vector<VkCommandBuffer> createCommandBuffersModel(vector<Mesh*> meshes); //Creates the sub command buffers that each model stores.
+	vector<VkCommandBuffer> createCommandBuffersModel(vector<Mesh>* meshes); //Creates the sub command buffers that each model stores.
 	//I would have it as const Mesh*, except I need to call getIndicesSize which is a non-static function
 
 	void drawFrame();

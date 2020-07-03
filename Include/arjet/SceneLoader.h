@@ -31,6 +31,10 @@ private:
 
 	ulong processShaders(ulong i);
 
+	ulong processObjects(ulong i);
+
+	uint tcount = 0; //Used for loading textures into the renderer
+
 	enum sectionFlag {
 		NONE,
 		SHADERS,

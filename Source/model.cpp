@@ -4,8 +4,8 @@
 Model::Model(GameObject& gameObject, Renderer& r, string const& path, uint& tCount) : gameObject(gameObject), renderer(r), textureCounter(tCount) {
 	view = &Universal::viewMatrix;
 	loadModel(path);
-	createSecondaryBuffers();
 	r.models.push_back(this);
+	createSecondaryBuffers();
 }
 void Model::loadModel(string const& path) {
 	Assimp::Importer importer;
@@ -21,8 +21,7 @@ void Model::processNode(aiNode* node, const aiScene* scene) {
 	//process all meshes in node
 	for (unsigned int i = 0; i < node->mNumMeshes; i++) {
 		aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
-		Mesh* retMesh = processMesh(mesh, scene);
-		meshes.push_back(retMesh);
+		meshes.push_back(processMesh(mesh, scene));
 	}
 
 	for (unsigned int i = 0; i < node->mNumChildren; i++) {
@@ -30,7 +29,7 @@ void Model::processNode(aiNode* node, const aiScene* scene) {
 	}
 }
 
-Mesh* Model::processMesh(aiMesh* mesh, const aiScene* scene) {
+Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene) {
 	//This whole thing works by copying vertices. Could speed it up by passing by reference. But then who would own the original?
 	vector<Vertex>vertices;
 	//vertices.reserve(mesh->mNumVertices);
@@ -95,7 +94,7 @@ Mesh* Model::processMesh(aiMesh* mesh, const aiScene* scene) {
 		textures.insert(textures.end(), specularMaps.begin(), specularMaps.end());
 		textures.insert(textures.end(), normalMaps.begin(), normalMaps.end());
 	}
-	return new Mesh(renderer, vertices, indices, textures, /*meshCounter++,*/ flags, this); 
+	return Mesh(renderer, vertices, indices, textures, flags, this); 
 }
 
 vector<Texture> Model::loadMaterialTextures(aiMaterial* mat, aiTextureType type, string typeName) {
@@ -128,7 +127,7 @@ vector<Texture> Model::loadMaterialTextures(aiMaterial* mat, aiTextureType type,
 
 void Model::createSecondaryBuffers() {
 	buffers.resize(renderer.swapchainImages.size());
-	buffers = renderer.createCommandBuffersModel(meshes);
+	buffers = renderer.createCommandBuffersModel(&meshes);
 }
 
 

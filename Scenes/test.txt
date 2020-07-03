@@ -2,7 +2,7 @@ SHADERS
 Shaders/vert.spv, Shaders/frag.spv
 Shaders/lightV.spv, Shaders/lightF.spv
 OBJECTS
-I, like an ursurped town to another due
-Labor to admit you, but oh to no end!
-Reason, your viceroy in me, me should defend
-But is captive, and proves weak or untrue
+Object, Example1
+Transform, Position, 0.0, -1 .0, -2.0, Scale, 0.2, 0.2, 0.2
+Model, models/nanosuit/scene.fbx
+END
