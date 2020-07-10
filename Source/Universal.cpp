@@ -28,6 +28,12 @@ int Universal::run() {
 
 
 	Time::start();
+
+	for (int i = 0; i < gameObjects.size(); i++) {
+		cout << "Starting " << gameObjects[i].name << endl;
+		gameObjects[i].start();
+	}
+
 	mainLoop();
 	return 0;
 }

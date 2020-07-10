@@ -1,6 +1,7 @@
 #include <arjet/SceneLoader.h>
 #include <arjet/Universal.h>
-
+#include <test_script1.h>
+#include <arjet/Component.h>
 //You may notice I use multiple different patterns for similar opporations. 
 //It's because I'm still getting a feel for them, and I want to mess around with multiple approaches
 
@@ -29,7 +30,7 @@ ulong SceneLoader::processObjects(ulong i) {
 	while (sectionFlagLookup(words[i][0]) == NONE) {
 		//This pattern isn't as efficiant as a switch(I think) but it's a lot easier to write
 		if (words[i][0] == "Object") { //Creates a new object
-			Universal::gameObjects.push_back(GameObject(words[i][1]));//constructs a game object, assigns a name from the file
+			Universal::gameObjects.push_back(GameObject(words[i][1])); //constructs a game object, assigns a name from the file
 		}
 		else if (words[i][0] == "Transform") { //processes a transform
 			int j = 1; //The word we're searching for
@@ -50,24 +51,38 @@ ulong SceneLoader::processObjects(ulong i) {
 			}
 		}
 		else if (words[i][0] == "Model") {
-			std::unique_ptr<Model> tempModel( new Model(Universal::gameObjects.back(), Universal::renderer, words[i][1], tcount)); //I don't know smart pointers. I hope this works
+			std::unique_ptr<Model> tempModel( new Model(Universal::gameObjects.back(), Universal::renderer, words[i][1], tcount)); //I don't know smart pointers. I'm just glad this works
 			Universal::gameObjects.back().components.push_back(std::move(tempModel));
+		}
+		else if (words[i][0] == "Script") {
+			auto ptr = generateScript(words[i][1]);
+			Universal::gameObjects.back().components.push_back(std::move(ptr)); //ugly
 		}
 		i++;
 	}
 	return i;
 }
 
+std::unique_ptr<Component> SceneLoader::generateScript(string str) { //Takes a string, returns the unique_ptr to the referenced script
+	//I'm gonna have to do this manually for each script I create until I make a whole ass script system
+	//Right now, I just have a half-ass script system
+	if (str == "test_script1") {
+		auto ptr = std::unique_ptr<Component>(new test_script1());
+		return ptr;
+	}
+}
+
+
 ulong SceneLoader::processShaders(ulong i) {
 	vector<ShaderPath> shaderPaths;
 	for (i; i < words.size(); i++) {
-		if (sectionFlagLookup(words[i][0]) != NONE) {//If we're done with the shaders i.e. found another block
+		if (sectionFlagLookup(words[i][0]) != NONE) { //If we're done with the shaders i.e. found another block
 			Universal::renderer.init(shaderPaths);
 			return i;
 		}
 		shaderPaths.push_back(ShaderPath(words[i][0], words[i][1])); //assumes standard 2 shader pipeline layout
 	}
-	cout << "Something went wrong in processShaders()" << endl;//Should hit another section flag. If it doesn't, something's wrong
+	cout << "Something went wrong in processShaders()" << endl; //Should hit another section flag. If it doesn't, something's wrong
 	return i;
 }
 
@@ -77,7 +92,6 @@ SceneLoader::sectionFlag SceneLoader::sectionFlagLookup(const string& str) {
 	if (str == "END") return END;
 	return NONE;
 }
-
 
 vector<vector<string>> SceneLoader::intakeLines() { //Opens the file, reads all the words into a 2d vector split by lines
 	sceneFile.open("Scenes/test.txt");

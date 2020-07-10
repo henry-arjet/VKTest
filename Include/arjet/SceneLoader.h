@@ -20,6 +20,7 @@ using std::cout;
 using std::endl;
 using std::string;
 
+class Component;
 
 class SceneLoader
 {
@@ -28,6 +29,8 @@ public:
 	void load();
 private:
 	vector<vector<string>> words;
+
+	std::unique_ptr<Component> generateScript(string str);
 
 	ulong processShaders(ulong i);
 

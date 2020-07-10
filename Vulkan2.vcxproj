@@ -163,7 +163,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(VULKAN_SDK)\Include;$(VULKAN_SDK)\Third-Party\Include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Users\Henry\source\repos\VKTest\Scripts;$(VULKAN_SDK)\Include;$(VULKAN_SDK)\Third-Party\Include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -185,7 +185,7 @@
       <EntryPointSymbol>mainCRTStartup</EntryPointSymbol>
     </Link>
     <ClCompile>
-      <AdditionalIncludeDirectories>$(VULKAN_SDK)\Include;$(VULKAN_SDK)\Third-Party\Include;</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Users\Henry\source\repos\VKTest\Scripts;$(VULKAN_SDK)\Include;$(VULKAN_SDK)\Third-Party\Include</AdditionalIncludeDirectories>
     </ClCompile>
     <ClCompile>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
@@ -197,6 +197,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="Scripts\test_script1.cpp" />
     <ClCompile Include="Source\camera.cpp" />
     <ClCompile Include="source\GameObject.cpp" />
     <ClCompile Include="Source\mesh.cpp" />
@@ -206,6 +207,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="Source\SceneLoader.cpp" />
+    <ClCompile Include="Source\script.cpp" />
     <ClCompile Include="Source\time.cpp" />
     <ClCompile Include="source\Universal.cpp" />
   </ItemGroup>
@@ -217,6 +219,7 @@
     <ClInclude Include="Include\arjet\mesh.h" />
     <ClInclude Include="Include\arjet\model.h" />
     <ClInclude Include="Include\arjet\SceneLoader.h" />
+    <ClInclude Include="Include\arjet\script.h" />
     <ClInclude Include="include\Arjet\shader.h" />
     <ClInclude Include="Include\Arjet\renderer.h" />
     <ClInclude Include="Include\arjet\time.h" />
@@ -224,6 +227,7 @@
     <ClInclude Include="Include\arjet\UBO.h" />
     <ClInclude Include="Include\arjet\Universal.h" />
     <ClInclude Include="include\Arjet\vertex.h" />
+    <ClInclude Include="Scripts\test_script1.h" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="Scenes\test.txt" />
