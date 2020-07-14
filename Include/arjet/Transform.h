@@ -1,6 +1,7 @@
 #pragma once
 #include <arjet/Component.h>
 #include <glm/glm.hpp>
+#include <iostream>
 
 using glm::vec3;
 using glm::vec2;
@@ -15,6 +16,7 @@ public:
     vec3 size = { 1.0f, 1.0f, 1.0f };
 
     void translate(vec3 tr) {
+        //std::cout << position.x << std::endl;
         position += tr;
     }
     void rotate(vec3 rot) {

@@ -68,6 +68,7 @@ std::unique_ptr<Component> SceneLoader::generateScript(string str) { //Takes a s
 	//Right now, I just have a half-ass script system
 	if (str == "test_script1") {
 		auto ptr = std::unique_ptr<Component>(new test_script1());
+		ptr->gameObject = &Universal::gameObjects.back();
 		return ptr;
 	}
 }

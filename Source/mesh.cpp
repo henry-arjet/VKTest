@@ -124,7 +124,6 @@ void Mesh::createDescriptorSets() {
 }
 
 void Mesh::updateUniformBuffer(uint currentFrame) {
-	cout << daddyModel->gameObject.transform.position.x << endl;
 	ubo.model = glm::translate(mat4(1.0f), daddyModel->gameObject.transform.position); //that's a bit of a mess
 	ubo.model = glm::scale(ubo.model, daddyModel->gameObject.transform.size);
 

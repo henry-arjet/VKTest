@@ -5,7 +5,6 @@
 mat4 Universal::viewMatrix; //reference to the main camera's view matrix
 Renderer Universal::renderer;
 vector<GameObject> Universal::gameObjects;
-Input Universal::input;
 bool Universal::mouseMode = true;
 Camera Universal::mainCamera;
 
@@ -26,14 +25,14 @@ int Universal::run() {
 
 	//gameObjects[0].transform->scale(0.3f);
 
-
+	Input::Init();
 	Time::start();
+	Time::resetDelta(); //just for a baseline
 
 	for (int i = 0; i < gameObjects.size(); i++) {
 		cout << "Starting " << gameObjects[i].name << endl;
 		gameObjects[i].start();
 	}
-
 	mainLoop();
 	return 0;
 }
@@ -105,6 +104,11 @@ while (stillRunning) {
 
 	//Get the new camera position to Universal
 	viewMatrix = mainCamera.GetViewMatrix();
+
+	//call update for every GameObject
+	for (int i = 0; i < gameObjects.size(); i++) {
+		gameObjects[i].update();
+	}
 
 	renderer.drawFrame();
 

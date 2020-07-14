@@ -33,6 +33,9 @@ public:
 
 	void start();
 
+	void update();
+
+
 	
 };
 

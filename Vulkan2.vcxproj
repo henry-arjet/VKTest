@@ -200,6 +200,7 @@
     <ClCompile Include="Scripts\test_script1.cpp" />
     <ClCompile Include="Source\camera.cpp" />
     <ClCompile Include="source\GameObject.cpp" />
+    <ClCompile Include="Source\Input.cpp" />
     <ClCompile Include="Source\mesh.cpp" />
     <ClCompile Include="Source\model.cpp" />
     <ClCompile Include="Source\renderer.cpp">
