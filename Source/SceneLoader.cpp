@@ -2,6 +2,7 @@
 #include <arjet/Universal.h>
 #include <test_script1.h>
 #include <arjet/Component.h>
+#include <arjet/Light.h>
 //You may notice I use multiple different patterns for similar opporations. 
 //It's because I'm still getting a feel for them, and I want to mess around with multiple approaches
 
@@ -30,33 +31,51 @@ ulong SceneLoader::processObjects(ulong i) {
 	while (sectionFlagLookup(words[i][0]) == NONE) {
 		//This pattern isn't as efficiant as a switch(I think) but it's a lot easier to write
 		if (words[i][0] == "Object") { //Creates a new object
-			Universal::gameObjects.push_back(GameObject(words[i][1])); //constructs a game object, assigns a name from the file
+			GameObjectPtr tempObject(new GameObject(words[i][1]));
+			Universal::gameObjects.push_back(std::move(tempObject)); //constructs a game object, assigns a name from the file
 		}
 		else if (words[i][0] == "Transform") { //processes a transform
 			int j = 1; //The word we're searching for
 			while (j < words[i].size()) {
 				if (words[i][j] == "Position") {
-					Universal::gameObjects.back().transform.position = vec3(stof(words[i][j + 1]), stof(words[i][j + 2]), stof(words[i][j + 3]));
+					Universal::gameObjects.back()->transform.position = vec3(stof(words[i][j + 1]), stof(words[i][j + 2]), stof(words[i][j + 3]));
 					j += 4;// Skips the three coordinates
 				}
 				else if (words[i][j] == "Scale") {
-					Universal::gameObjects.back().transform.size = vec3(stof(words[i][j + 1]), stof(words[i][j + 2]), stof(words[i][j + 3]));
+					Universal::gameObjects.back()->transform.size = vec3(stof(words[i][j + 1]), stof(words[i][j + 2]), stof(words[i][j + 3]));
 					j += 4;// Skips the three coordinates
 				}
 				else if (words[i][j] == "Rotation") {
-					Universal::gameObjects.back().transform.rotation = vec3(stof(words[i][j + 1]), stof(words[i][j + 2]), stof(words[i][j + 3]));
+					Universal::gameObjects.back()->transform.rotation = vec3(stof(words[i][j + 1]), stof(words[i][j + 2]), stof(words[i][j + 3]));
 					j += 4;// Skips the three coordinates
 				}
 				else { cout << "Something's wrong with your transform input" << endl; j++; }
 			}
 		}
 		else if (words[i][0] == "Model") {
-			std::unique_ptr<Model> tempModel( new Model(Universal::gameObjects.back(), Universal::renderer, words[i][1], tcount)); //I don't know smart pointers. I'm just glad this works
-			Universal::gameObjects.back().components.push_back(std::move(tempModel));
+			std::unique_ptr<Model> tempModel( new Model(Universal::gameObjects.back().get(), Universal::renderer, words[i][1], tcount)); //I don't know smart pointers. I'm just glad this works
+			tempModel->type = "Model";
+			Universal::gameObjects.back()->components.push_back(std::move(tempModel));
 		}
 		else if (words[i][0] == "Script") {
 			auto ptr = generateScript(words[i][1]);
-			Universal::gameObjects.back().components.push_back(std::move(ptr)); //ugly
+			ptr->type = "Script";
+			Universal::gameObjects.back()->components.push_back(std::move(ptr));
+		}
+		else if (words[i][0] == "Light") {
+			std::unique_ptr<Light> tempLight(new Light());
+			tempLight->type = "Light";
+			tempLight->active = true;
+			tempLight->info.inUse = true;
+			tempLight->gameObject = Universal::gameObjects.back().get(); //Store the raw pointer, as the gameObject will delete the light when it itself is deleted
+			int j = 1; //The word we're searching for
+			while (j < words[i].size()) { //Same pattern as for transform
+				if (words[i][j] == "Strength") {
+					tempLight->info.strength = stof(words[i][j + 1]);
+					j += 2;
+				}
+			}
+			Universal::gameObjects.back()->components.push_back(std::move(tempLight));
 		}
 		i++;
 	}
@@ -68,7 +87,7 @@ std::unique_ptr<Component> SceneLoader::generateScript(string str) { //Takes a s
 	//Right now, I just have a half-ass script system
 	if (str == "test_script1") {
 		auto ptr = std::unique_ptr<Component>(new test_script1());
-		ptr->gameObject = &Universal::gameObjects.back();
+		ptr->gameObject = Universal::gameObjects.back().get();
 		return ptr;
 	}
 }

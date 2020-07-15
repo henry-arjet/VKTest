@@ -17,15 +17,13 @@ void TextureFromFile(Renderer& renderer, uint count, const char* path, const str
 class Model : public Component {
 public:
 	bool draw = true;
-	vec3 position;
-	vec3 scale;
+	//vec3 position; Moved to transform
+	//vec3 scale;
 	mat4* view; //Point each model to a universal view vec3
 	vector<VkCommandBuffer> buffers;
 	vector<Mesh> meshes;
-
-	GameObject& gameObject;
 	//functions
-	Model(GameObject& gameObject, Renderer& r, string const& path, uint& tCount);
+	Model(GameObject* gameObject, Renderer& r, string const& path, uint& tCount);
 
 private:
 	string directory;

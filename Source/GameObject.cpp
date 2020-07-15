@@ -1,5 +1,6 @@
 //I need this source file for literally one damn function
 #include <arjet/GameObject.h>
+#include <arjet/Component.h>
 
 void GameObject::start() {
 

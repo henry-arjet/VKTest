@@ -1,7 +1,8 @@
 #include "arjet/model.h"
 #include <arjet/Universal.h>
 
-Model::Model(GameObject& gameObject, Renderer& r, string const& path, uint& tCount) : gameObject(gameObject), renderer(r), textureCounter(tCount) {
+Model::Model(GameObject* gameObject, Renderer& r, string const& path, uint& tCount) : renderer(r), textureCounter(tCount) {
+	this->gameObject = gameObject;
 	view = &Universal::viewMatrix;
 	loadModel(path);
 	r.models.push_back(this);

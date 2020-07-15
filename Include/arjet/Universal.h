@@ -21,7 +21,7 @@
 
 
 
-#define GLM_FORCE_DEPTH_ZERO_TO_ONE//depth is -1 - 1 in GL and 0 - 1 in VK 
+#define GLM_FORCE_DEPTH_ZERO_TO_ONE //depth is -1 - 1 in GL and 0 - 1 in VK 
 #define GLM_FORCE_DEFAULT_ALIGNED_GENTYPES //Doesn't work if I don't do this. Alignment is still mostly a mystery to me.
 
 
@@ -33,6 +33,7 @@
 #define scuint static_cast<uint32_t>
 #define ARJET_SHADER_FLAG_NORMAL 1 // flag for telling my shaders this mesh uses normal maps
 
+typedef std::unique_ptr<GameObject> GameObjectPtr;
 
 using glm::mat4;
 
@@ -45,7 +46,7 @@ class Universal{
 public:
 	static mat4 viewMatrix; //reference to the main camera's view matrix
 	static Renderer renderer;
-	static vector<GameObject> gameObjects;
+	static vector<GameObjectPtr> gameObjects;
 	static Input input;
 	static Camera mainCamera;
 

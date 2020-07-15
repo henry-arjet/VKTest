@@ -6,10 +6,7 @@
 using glm::vec3;
 using glm::vec2;
 
-class Component;
-
-class Transform :
-    public Component{
+class Transform : public Component{
 public:
     vec3 position = { 0.0f, 0.0f, 0.0f };
     vec3 rotation = { 0.0f, 0.0f, 0.0f };
@@ -30,5 +27,5 @@ public:
     }
 
 
-    Transform() {}
+    Transform() { type = "Transform"; }
 };

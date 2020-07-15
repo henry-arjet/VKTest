@@ -3,7 +3,10 @@ Shaders/vert.spv, Shaders/frag.spv
 Shaders/lightV.spv, Shaders/lightF.spv
 OBJECTS
 Object, Example1
-Transform, Position, 0.0, -1 .0, -2.0, Scale, 0.2, 0.2, 0.2
+Transform, Position, 0.0, -1.0, -2.0, Scale, 0.2, 0.2, 0.2
 Model, models/nanosuit/scene.fbx
 Script, test_script1
+Object, Light1
+Transform, Position, 0.0, 2.0, -1.0
+Light, Strength, 1.0f
 END

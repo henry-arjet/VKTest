@@ -33,8 +33,8 @@ layout(location = 0) out vec4 outColor;
 
 void main(){
 	outColor = vec4(0,0,0,0);
-	//outColor += texture(texSampler[0], fragTexCoord) * 0.3; //ambiant light
-	outColor += texture(texSampler[0], fragTexCoord) * 0.8; //ambiant light
+	outColor += texture(texSampler[0], fragTexCoord) * 0.3; //ambiant light
+	//outColor += texture(texSampler[0], fragTexCoord) * 0.8; //ambiant light
 	
 	vec3 norm;
 	//Normal mapping stuff
@@ -49,7 +49,7 @@ void main(){
 
 
 	//Diffuse lighting from point light
-	vec3 lightDir = normalize(ubo.infos[0].position - fragPos);
+	vec3 lightDir = normalize(fragPos - ubo.infos[0].position );
 	float diff = max(dot(norm, lightDir), 0.0);
 	outColor += texture(texSampler[0], fragTexCoord) * diff*3;
 	

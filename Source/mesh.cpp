@@ -1,5 +1,6 @@
 #include <arjet/mesh.h>
 #include <arjet/GameObject.h>
+#include <arjet/Light.h>
 
 void Mesh::createVertexBuffer() {//creates a VK vertex buffer from the vertices data it has
 	VkDeviceSize bufferSize = sizeof(vertices[0]) * vertices.size();
@@ -124,12 +125,23 @@ void Mesh::createDescriptorSets() {
 }
 
 void Mesh::updateUniformBuffer(uint currentFrame) {
-	ubo.model = glm::translate(mat4(1.0f), daddyModel->gameObject.transform.position); //that's a bit of a mess
-	ubo.model = glm::scale(ubo.model, daddyModel->gameObject.transform.size);
+	ubo.model = glm::translate(mat4(1.0f), daddyModel->gameObject->transform.position); //that's a bit of a mess
+	ubo.model = glm::scale(ubo.model, daddyModel->gameObject->transform.size);
 
 	ubo.view = *daddyModel->view; //If I understand c++ correctly this should just copy
 
 	ubo.normalMatrix = mat3(glm::transpose(glm::inverse(ubo.model)));
+	int l = 0; //Counts how many lights we've added
+	//Not scalable, but I can use it for now
+	for (int i = 0; i < Universal::gameObjects.size(); i++) {
+		for(int j = 0; j < Universal::gameObjects[i]->components.size(); j++){//For each component in each GameObject
+			if (Universal::gameObjects[i]->components[j]->type == "Light") { //For each light
+				auto lightPtr = dynamic_cast<Light*> (Universal::gameObjects[i]->components[j].get());
+				ubo.lights[l] = lightPtr->info;//Probably shouldn't copy
+				l++;
+			}
+		}
+	}
 
 	void* data;
 	vkMapMemory(renderer.device, uniformBuffersMemory[currentFrame], 0, sizeof(ubo), 0, &data);
