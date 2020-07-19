@@ -16,6 +16,7 @@ void TextureFromFile(Renderer& renderer, uint count, const char* path, const str
 
 class Model : public Component {
 public:
+	void start();
 	bool draw = true;
 	//vec3 position; Moved to transform
 	//vec3 scale;

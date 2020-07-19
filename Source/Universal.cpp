@@ -1,44 +1,37 @@
 #include<arjet/Universal.h>
 
-//For some reason, it crashes on exit if I don't have this
-
 mat4 Universal::viewMatrix; //reference to the main camera's view matrix
 Renderer Universal::renderer;
 vector<GameObjectPtr> Universal::gameObjects;
 bool Universal::mouseMode = true;
-Camera Universal::mainCamera;
+Camera* Universal::mainCamera;
 
 
 int Universal::run() {
-	mainCamera = Camera();
+	//USE A DOUBLE POINTER. So have a pointer to universal::viewMatrix, and then have that be a pointer to mainCamera::viewMatrix
+	//OR I could put that stuff in the start() function. So I load the camera, push Universal::viewMatrix, and then have each model's start() function apply that view matrix
+	//Which I think would be faster in execution but a little more complex
 	//Universal.viewMatrix must be a thing before I create models
-	Universal::viewMatrix = mainCamera.GetViewMatrix(); 
 	
 	SceneLoader loader;
 	loader.load();
 
-	
-	//gameObjects.push_back(GameObject());
+	Universal::viewMatrix = mat4(0.0f); //Now that we have a camera, we need to add its veiwMatrix before we initialize the models with start()
 
-
-	//uint tCount = 0; //keeps track of textures
-	//gameObjects[0].components.push_back(new Model(gameObjects[0], renderer, "models/nanosuit/scene.fbx", tCount));
-
-	//gameObjects[0].transform->scale(0.3f);
 
 	Input::Init();
 	Time::start();
-	Time::resetDelta(); //just for a baseline
 
 	for (int i = 0; i < gameObjects.size(); i++) {
 		cout << "Starting " << gameObjects[i]->name << endl;
 		gameObjects[i]->start();
 	}
+	Time::resetDelta(); //just so it doesn't count all the loading and starting in the first deltaTime.
 	mainLoop();
 	return 0;
 }
 void Universal::mainLoop() {
-bool stillRunning = true;
+	bool stillRunning = true;
 while (stillRunning) {
 	//set deltaTime and 'now' for this frame
 	Time::resetDelta();
@@ -70,18 +63,6 @@ while (stillRunning) {
 		}
 	}
 
-
-
-	if (input.GetButtonDown("A")) {
-		mainCamera.ProcessKeyboard(LEFT, Time::deltaTime);
-	}if (input.GetButtonDown("S")) {
-		mainCamera.ProcessKeyboard(BACKWARD, Time::deltaTime);
-	}if (input.GetButtonDown("D")) {
-		mainCamera.ProcessKeyboard(RIGHT, Time::deltaTime);
-	}if (input.GetButtonDown("W")) {
-		mainCamera.ProcessKeyboard(FORWARD, Time::deltaTime);
-	}
-
 	//Cycle mouse mode vs keyboard only mode. Allows the mouse to be freed
 	if (input.OnPress("Escape")) {
 		if (mouseMode) {
@@ -94,17 +75,10 @@ while (stillRunning) {
 			SDL_WarpMouseInWindow(renderer.window, 50, 50); //for some reason this doesn't work
 		}
 	}
-	//Mouse input
-	if (mouseMode) {
-		int xoff;
-		int yoff;
-		SDL_GetMouseState(&xoff, &yoff);
-		mainCamera.ProcessMouseMovement(xoff - 50, -1 * yoff + 50);
-		SDL_WarpMouseInWindow(renderer.window, 50, 50);
-	}
+	
 
 	//Get the new camera position to Universal
-	viewMatrix = mainCamera.GetViewMatrix();
+	viewMatrix = mainCamera->GetViewMatrix();
 
 	//call update for every GameObject
 	for (int i = 0; i < gameObjects.size(); i++) {
@@ -115,7 +89,3 @@ while (stillRunning) {
 
 }//close while(stillRunning)
 }//close mainLoop()
-
-Universal::~Universal() {
-	cout << "TEST" << endl;
-}

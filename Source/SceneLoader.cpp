@@ -1,15 +1,17 @@
 #include <arjet/SceneLoader.h>
 #include <arjet/Universal.h>
-#include <test_script1.h>
 #include <arjet/Component.h>
 #include <arjet/Light.h>
+
+#include <test_script1.h>
+#include <camera_script.h>
 //You may notice I use multiple different patterns for similar opporations. 
 //It's because I'm still getting a feel for them, and I want to mess around with multiple approaches
 
 void SceneLoader::load() {
-	words = intakeLines();
+	words = intakeLines(); //This method processes the blocks. So shader block, object block, whatever else I add
 	for (ulong i = 0; i < words.size(); i++) {
-		switch (sectionFlagLookup(words[i][0])) {
+		switch (sectionFlagLookup(words[i][0])) { //Fun fact switches don't seem to work with strings. Thus, sectionFlagLookup to turn string into enum using if statements, thus wasting all the gains of using a switch. Ugh.
 		case SHADERS:
 			cout << "Hit shader block" << endl;
 			i = processShaders(i+1) - 1;
@@ -27,8 +29,8 @@ void SceneLoader::load() {
 	}
 }
 
-ulong SceneLoader::processObjects(ulong i) {
-	while (sectionFlagLookup(words[i][0]) == NONE) {
+ulong SceneLoader::processObjects(ulong i) { //This method works inside the object block, changes the context until a new block is hit
+	while (sectionFlagLookup(words[i][0]) == NONE) { //While we haven't hit a new block
 		//This pattern isn't as efficiant as a switch(I think) but it's a lot easier to write
 		if (words[i][0] == "Object") { //Creates a new object
 			GameObjectPtr tempObject(new GameObject(words[i][1]));
@@ -77,6 +79,13 @@ ulong SceneLoader::processObjects(ulong i) {
 			}
 			Universal::gameObjects.back()->components.push_back(std::move(tempLight));
 		}
+		else if (words[i][0] == "Camera"){
+			std::unique_ptr<Camera> tempCamera(new Camera());
+			tempCamera->type = "Camera";//might want to move type string assignment to the constructor
+			tempCamera->gameObject = Universal::gameObjects.back().get();
+			Universal::mainCamera = tempCamera.get(); //Just as with light, we don't want to give the Universal class ownership
+			Universal::gameObjects.back()->components.push_back(std::move(tempCamera));
+		}
 		i++;
 	}
 	return i;
@@ -90,6 +99,12 @@ std::unique_ptr<Component> SceneLoader::generateScript(string str) { //Takes a s
 		ptr->gameObject = Universal::gameObjects.back().get();
 		return ptr;
 	}
+	else if (str == "camera_script") {
+		auto ptr = std::unique_ptr<Component>(new camera_script());
+		ptr->gameObject = Universal::gameObjects.back().get();
+		return ptr;
+	}
+	else cout << "Couldn't find the script" << endl;
 }
 
 

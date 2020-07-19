@@ -34,7 +34,6 @@
 #define ARJET_SHADER_FLAG_NORMAL 1 // flag for telling my shaders this mesh uses normal maps
 
 typedef std::unique_ptr<GameObject> GameObjectPtr;
-
 using glm::mat4;
 
 using std::vector;
@@ -48,12 +47,11 @@ public:
 	static Renderer renderer;
 	static vector<GameObjectPtr> gameObjects;
 	static Input input;
-	static Camera mainCamera;
+	static Camera* mainCamera;
 
 	static bool mouseMode; //keeps track of if I should trap the mouse
 
 	static int run();//Executes everything. Main() only points here.
 
 	static void mainLoop(); //Master perframe loop
-	~Universal();
 };

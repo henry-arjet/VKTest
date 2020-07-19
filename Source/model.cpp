@@ -1,9 +1,12 @@
 #include "arjet/model.h"
 #include <arjet/Universal.h>
 
+void Model::start() {//Called by parent gameObject
+	view = &Universal::viewMatrix; //We need to make sure the camera exists and Universal::viewMatrix exists first;
+}
+
 Model::Model(GameObject* gameObject, Renderer& r, string const& path, uint& tCount) : renderer(r), textureCounter(tCount) {
 	this->gameObject = gameObject;
-	view = &Universal::viewMatrix;
 	loadModel(path);
 	r.models.push_back(this);
 	createSecondaryBuffers();

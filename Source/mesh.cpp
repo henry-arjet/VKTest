@@ -137,7 +137,7 @@ void Mesh::updateUniformBuffer(uint currentFrame) {
 		for(int j = 0; j < Universal::gameObjects[i]->components.size(); j++){//For each component in each GameObject
 			if (Universal::gameObjects[i]->components[j]->type == "Light") { //For each light
 				auto lightPtr = dynamic_cast<Light*> (Universal::gameObjects[i]->components[j].get());
-				ubo.lights[l] = lightPtr->info;//Probably shouldn't copy
+				ubo.lights[l] = lightPtr->info;
 				l++;
 			}
 		}

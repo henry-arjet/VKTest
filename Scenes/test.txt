@@ -7,6 +7,11 @@ Transform, Position, 0.0, -1.0, -2.0, Scale, 0.2, 0.2, 0.2
 Model, models/nanosuit/scene.fbx
 Script, test_script1
 Object, Light1
-Transform, Position, 0.0, 2.0, -1.0
+Transform, Position, 0.0, 2.0, -1.0, Scale, 0.05, 0.05, 0.05
 Light, Strength, 1.0f
+Model, models/nanosuit/scene.fbx
+Object, MainCamera
+Transform, Position, 0.0, 0.0, 0.0
+Script, camera_scriptw
+Camera
 END
