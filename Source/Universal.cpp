@@ -13,6 +13,8 @@ int Universal::run() {
 	//Which I think would be faster in execution but a little more complex
 	//Universal.viewMatrix must be a thing before I create models
 	
+	renderer.graphicsOptions.vsync = true;
+
 	SceneLoader loader;
 	loader.load();
 

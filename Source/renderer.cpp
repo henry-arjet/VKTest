@@ -106,6 +106,7 @@ void Renderer::findPhysicalDevice() {
 	std::vector<VkPhysicalDevice> gpus(gpuCount);
 	res = vkEnumeratePhysicalDevices(inst, &gpuCount, gpus.data());
 	physicalDevice = gpus[0];//Just picks the first device
+	//physicalDevice = gpus[0];//Just picks the first device
 }
 
 void Renderer::createLogicalDevice() {
@@ -897,7 +898,6 @@ void Renderer::drawFrame() {
 	presentInfo.swapchainCount = 1;
 	presentInfo.pSwapchains = swapchains;
 	presentInfo.pImageIndices = &imageIndex;
-
 	res = vkQueuePresentKHR(graphicsQueue, &presentInfo);//remember we asserted that graphicsQueue = presentQueue
 	if (res == VK_ERROR_OUT_OF_DATE_KHR || res == VK_SUBOPTIMAL_KHR || framebufferResized) {
 		framebufferResized = false;
@@ -907,6 +907,7 @@ void Renderer::drawFrame() {
 	else if (res != VK_SUCCESS) {
 		throw std::runtime_error("failed to present swap chain image");
 	}
+
 	currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
 }
 
@@ -924,7 +925,7 @@ void Renderer::recreateCommandBuffer() {
 	VkRenderPassBeginInfo renderPassInfo{};
 	renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
 	renderPassInfo.renderPass = renderPass;
-	renderPassInfo.framebuffer = swapchainFramebuffers[cframe];
+	renderPassInfo.framebuffer = swapchainFramebuffers[imageIndex];
 	renderPassInfo.renderArea.offset = { 0, 0 };
 	renderPassInfo.renderArea.extent = swapchainExtent;
 
