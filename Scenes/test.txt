@@ -12,6 +12,6 @@ Light, Strength, 1.0f
 Model, models/nanosuit/scene.fbx
 Object, MainCamera
 Transform, Position, 0.0, 0.0, 0.0
-Script, camera_scriptw
+Script, camera_script
 Camera
 END
