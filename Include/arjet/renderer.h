@@ -37,10 +37,16 @@ using std::endl;
 class Mesh;
 class Model;
 
+struct GraphicsOptions {
+	bool vsync = false;
+};
+
 class Renderer {
 
 public:
 	
+	GraphicsOptions graphicsOptions;
+
 	//Validation layers for debugging
 	const vector<const char*> validationLayers = { "VK_LAYER_KHRONOS_validation" };
 

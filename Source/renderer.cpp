@@ -194,7 +194,12 @@ void Renderer::createSwapchain() {
 	swapchainInfo.imageArrayLayers = 1;
 	swapchainInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
 
-	swapchainInfo.presentMode = VK_PRESENT_MODE_IMMEDIATE_KHR; //We don't need to mess with others
+	if (graphicsOptions.vsync) {
+		swapchainInfo.presentMode = VK_PRESENT_MODE_FIFO_KHR;
+
+	}else{
+		swapchainInfo.presentMode = VK_PRESENT_MODE_IMMEDIATE_KHR;
+	}
 	swapchainInfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE; //we assume present and graphics queue is the same
 	swapchainInfo.queueFamilyIndexCount = 0;
 	swapchainInfo.pQueueFamilyIndices = NULL;
