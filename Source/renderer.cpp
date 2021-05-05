@@ -976,16 +976,6 @@ void Renderer::cleanupSwapChain() {
 	}
 
 	vkDestroySwapchainKHR(device, swapchain, NULL);
-
-	for (Model* mo : models) {
-		for (int j = 0; j < mo->meshes.size(); j++) {
-			for (size_t k = 0; k < swapchainImages.size(); k++) {
-				vkDestroyBuffer(device, mo->meshes[j].uniformBuffers[k], NULL);
-				vkFreeMemory(device, mo->meshes[j].uniformBuffersMemory[k], NULL);
-			}
-			vkDestroyDescriptorPool(device, mo->meshes[j].descriptorPool, NULL);
-		}
-	}
 }
 
 void Renderer::cleanup(){
@@ -1001,16 +991,6 @@ void Renderer::cleanup(){
 	}
 
 	vkDestroyDescriptorSetLayout(device, descriptorSetLayout, NULL);
-
-	for (Model* mo : models) {
-		for (int j = 0; j < mo->meshes.size(); j++) {
-			vkDestroyBuffer(device, mo->meshes[j].indexBuffer, NULL);
-			vkFreeMemory(device, mo->meshes[j].indexBufferMemory, NULL);
-
-			vkDestroyBuffer(device, mo->meshes[j].vertexBuffer, NULL);
-			vkFreeMemory(device, mo->meshes[j].vertexBufferMemory, NULL);
-		}
-	}
 
 	for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
 		vkDestroySemaphore(device, renderFinishedSemaphores[i], NULL);
