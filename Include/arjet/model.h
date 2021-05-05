@@ -26,6 +26,7 @@ public:
 	//functions
 	Model(GameObject* gameObject, Renderer& r, string const& path, uint& tCount);
 	void clean(); //frees up all the renderer handles
+	void recreateSecondaryBuffers();
 private:
 	string directory;
 	vector<Texture> textures_loaded;

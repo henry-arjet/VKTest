@@ -76,6 +76,8 @@ public:
 	VkDeviceMemory vertexBufferMemory;
 	VkDeviceMemory indexBufferMemory;
 	vector<VkDeviceMemory> uniformBuffersMemory;
+	void processUBOConstants();
+
 private:
 	uint indicesSize = UINT32_MAX;
 
@@ -94,7 +96,6 @@ private:
 	//to tell the shader that every mesh has a normal and spec when only one does.
 	//Could make a model descriptor set and a mesh descriptor set, but I don't think I will
 
-	void processUBOConstants();
 
 };
 

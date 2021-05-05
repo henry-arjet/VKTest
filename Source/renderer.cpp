@@ -464,7 +464,6 @@ void Renderer::createPipelines() {
 
 		res = vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &pipelineInfo, NULL, &graphicsPipelines[i]);
 		assert(res == VK_SUCCESS);
-		shaders[i].destroy();
 	}
 }
 
@@ -806,14 +805,14 @@ vector<VkCommandBuffer> Renderer::createCommandBuffersModel(vector<Mesh>* modelM
 
 	assres;
 
-	for (UINT i = 0; i < s; i++) { //hardcoded to create two command buffers
+	for (UINT i = 0; i < s; i++) {
 
 		VkCommandBufferInheritanceInfo inherInfo = {};
 		inherInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO;
 		inherInfo.occlusionQueryEnable = 0;
 		inherInfo.queryFlags = 0; //I have no fucking clue what inherited queries are. Or where they're from. But spec says I need this.
 		inherInfo.renderPass = renderPass;
-		//inherInfo.framebuffer //Could do this, might help a bit. Not required TODO
+		//inherInfo.framebuffer //Could do this, might help a bit. Not required TODO |||  wait, how? - me 9 months later
 
 
 		VkCommandBufferBeginInfo beginInfo = {};
@@ -845,7 +844,7 @@ void Renderer::drawFrame() {
 
 	res = vkAcquireNextImageKHR(device, swapchain, UINT64_MAX, imageAvailableSemaphores[currentFrame], NULL, &imageIndex);
 	if (res == VK_ERROR_OUT_OF_DATE_KHR) {
-		//recreateSwapchain(); TODO
+		recreateSwapchain();
 		return;
 	}
 	else if (res != VK_SUCCESS && res != VK_SUBOPTIMAL_KHR) {
@@ -900,7 +899,7 @@ void Renderer::drawFrame() {
 	res = vkQueuePresentKHR(graphicsQueue, &presentInfo);//remember we asserted that graphicsQueue = presentQueue
 	if (res == VK_ERROR_OUT_OF_DATE_KHR || res == VK_SUBOPTIMAL_KHR || framebufferResized) {
 		framebufferResized = false;
-		//recreateSwapchain(); TODO
+		recreateSwapchain();
 		return;
 	}
 	else if (res != VK_SUCCESS) {
@@ -912,7 +911,7 @@ void Renderer::drawFrame() {
 
 
 void Renderer::recreateCommandBuffer() {
-	uint size = shaders.size(); //how many shaders (and thus pipelines) we're working with. Depreciated
+	uint size = shaders.size(); //how many shaders (and thus pipelines) we're working with. Deprecated
 	uint cframe = currentFrame;
 
 	VkCommandBufferBeginInfo beginInfo = {};
@@ -1033,6 +1032,31 @@ void Renderer::cleanModels(){
 	}
 }
 
+void Renderer::recreateSwapchain() {
+	cout << "Let's recreate this bitch!" << endl;
+	vkDeviceWaitIdle(device);
+
+	cleanupSwapChain();
+	
+	createSwapchain();
+	createRenderPass();
+	createPipelines();
+	createDepthResources();
+	for (Model* m : models) {
+		m->recreateSecondaryBuffers();
+		for (size_t j = 0; j < m->meshes.size(); j++) {
+			m->meshes[j].processUBOConstants(); //since the extent has changed, we need to recalculate the projection matrix
+		}
+	}
+	createFramebuffers();
+	createMasterCmdBuffers();
+
+}
+
 Renderer::~Renderer() {
+	for (Shader s : shaders) {
+		s.destroy();
+	}
+
 	cleanup();
 }

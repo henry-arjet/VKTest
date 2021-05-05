@@ -134,7 +134,11 @@ void Model::createSecondaryBuffers() {
 	buffers = renderer.createCommandBuffersModel(&meshes);
 }
 
-
+void Model::recreateSecondaryBuffers() {
+	vkFreeCommandBuffers(renderer.device, renderer.commandPool, buffers.size(), buffers.data());
+	buffers.resize(renderer.swapchainImages.size());
+	buffers = renderer.createCommandBuffersModel(&meshes);
+}
 void TextureFromFile(Renderer& renderer, uint count, const char* path, const string& directory)
 {
 	string filename = string(path);

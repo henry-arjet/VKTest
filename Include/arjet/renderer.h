@@ -214,6 +214,9 @@ public:
 
 	void cleanupSwapChain();
 
+	void recreateSwapchain();
+
+
 	void cleanModels();
 
 	void cleanup();

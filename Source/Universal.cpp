@@ -76,7 +76,7 @@ while (stillRunning) {
 		else {
 			mouseMode = true;
 			SDL_ShowCursor(0);
-			SDL_WarpMouseInWindow(renderer.window, 50, 50); //for some reason this doesn't work
+			SDL_WarpMouseInWindow(renderer.window, 50, 50);
 		}
 	}
 	
