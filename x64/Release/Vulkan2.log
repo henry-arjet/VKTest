@@ -1,16 +1,1 @@
-﻿  main.cpp
-C:\Users\Henry\source\repos\VKTest\Include\arjet\shader.h(51,12): warning C4101: 'shaderIndex': unreferenced local variable
-C:\Users\Henry\source\repos\VKTest\Include\arjet\mesh.h(69,1): warning C4267: '=': conversion from 'size_t' to 'uint32_t', possible loss of data
-  The contents of <optional> are available only with C++17 or later.
-C:\Users\Henry\source\repos\VKTest\main.cpp(128,42): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-C:\Users\Henry\source\repos\VKTest\main.cpp(130,46): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-C:\Users\Henry\source\repos\VKTest\main.cpp(132,43): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-C:\Users\Henry\source\repos\VKTest\main.cpp(134,45): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-C:\Users\Henry\source\repos\VKTest\main.cpp(154,56): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
-C:\Users\Henry\source\repos\VKTest\main.cpp(154,40): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
-  Generating code
-  11 of 1953 functions ( 0.6%) were compiled, the rest were copied from previous compilation.
-    6 functions were new in current compilation
-    52 functions had inline decision re-evaluated but remain unchanged
-  Finished generating code
-  Vulkan2.vcxproj -> C:\Users\Henry\source\repos\VKTest\x64\Release\Vulkan2.exe
+﻿
