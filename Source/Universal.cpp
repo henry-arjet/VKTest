@@ -30,6 +30,8 @@ int Universal::run() {
 	}
 	Time::resetDelta(); //just so it doesn't count all the loading and starting in the first deltaTime.
 	mainLoop();
+
+	renderer.cleanModels();
 	return 0;
 }
 void Universal::mainLoop() {

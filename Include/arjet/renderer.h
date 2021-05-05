@@ -214,6 +214,8 @@ public:
 
 	void cleanupSwapChain();
 
+	void cleanModels();
+
 	void cleanup();
 
 	~Renderer();

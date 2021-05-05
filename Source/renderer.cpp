@@ -457,15 +457,14 @@ void Renderer::createPipelines() {
 	if (graphicsPipelines.size() < shaders.size()) {
 		graphicsPipelines.resize(shaders.size());
 	}
+	cout << shaders.size() << endl;
 	for (int i = 0; i < shaders.size(); i++) {
 		pipelineInfo.pStages = shaders[i].shaderStages;
 
 
 		res = vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &pipelineInfo, NULL, &graphicsPipelines[i]);
 		assert(res == VK_SUCCESS);
-
-		//vkDestroyShaderModule(device, fragShaderModule, NULL); Should probs put these back in at some point
-		//vkDestroyShaderModule(device, vertShaderModule, NULL);
+		shaders[i].destroy();
 	}
 }
 
@@ -712,7 +711,7 @@ void Renderer::createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemor
 	bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 	res = vkCreateBuffer(device, &bufferInfo, NULL, &buffer);
 	assres;
-
+		
 	VkMemoryRequirements memRequirements;
 	vkGetBufferMemoryRequirements(device, buffer, &memRequirements);
 
@@ -963,10 +962,8 @@ void Renderer::cleanupSwapChain() {
 	}
 	//destroy the master command buffers
 	vkFreeCommandBuffers(device, commandPool, scuint(commandBuffers.size()), commandBuffers.data());
-
-	for (Model* mo : models) {
-		vkFreeCommandBuffers(device, commandPool, mo->buffers.size(), mo->buffers.data());
-	}
+	
+	//models MUST be cleaned
 
 	for (auto pipe : graphicsPipelines) {
 		vkDestroyPipeline(device, pipe, NULL);
@@ -1030,6 +1027,30 @@ void Renderer::cleanup(){
 	SDL_DestroyWindow(window);
 	window = NULL;
 	SDL_Quit();
+}
+
+void Renderer::cleanModels(){
+	vkDeviceWaitIdle(device);
+
+	for (Model* mo : models) {
+		vkFreeCommandBuffers(device, commandPool, mo->buffers.size(), mo->buffers.data());
+		for (int j = 0; j < mo->meshes.size(); j++) {
+			vkDestroyBuffer(device, mo->meshes[j].indexBuffer, NULL);
+			vkFreeMemory(device, mo->meshes[j].indexBufferMemory, NULL);
+
+			vkDestroyBuffer(device, mo->meshes[j].vertexBuffer, NULL);
+			vkFreeMemory(device, mo->meshes[j].vertexBufferMemory, NULL);
+
+			vkFreeDescriptorSets(device, mo->meshes[j].descriptorPool, mo->meshes[j].descriptorSets.size(), mo->meshes[j].descriptorSets.data());
+			vkDestroyDescriptorPool(device, mo->meshes[j].descriptorPool, NULL);
+
+			for (size_t k = 0; k < mo->meshes[j].uniformBuffers.size(); k++) {
+				vkDestroyBuffer(device, mo->meshes[j].uniformBuffers[k], NULL);
+				vkFreeMemory(device, mo->meshes[j].uniformBuffersMemory[k], NULL);
+			}
+			
+		}
+	}
 }
 
 Renderer::~Renderer() {

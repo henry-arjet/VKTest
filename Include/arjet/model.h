@@ -25,7 +25,7 @@ public:
 	vector<Mesh> meshes;
 	//functions
 	Model(GameObject* gameObject, Renderer& r, string const& path, uint& tCount);
-
+	void clean(); //frees up all the renderer handles
 private:
 	string directory;
 	vector<Texture> textures_loaded;

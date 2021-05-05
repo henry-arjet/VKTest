@@ -151,3 +151,7 @@ void TextureFromFile(Renderer& renderer, uint count, const char* path, const str
 
 	renderer.createTextureImage(count, filename.c_str());
 }
+
+void Model::clean() {
+
+}

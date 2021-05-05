@@ -41,6 +41,7 @@ public:
 	uint index;//Just to keep track of it. Should match the index in the renderer
 	Shader() {}
 	Shader(const string vertexPath, const string fragmentPath, uint index, VkDevice d) {
+
 		Shader::index = index;
 		device = d;
 		//read from files
@@ -52,8 +53,8 @@ public:
 		auto vertShaderCode = readFile(vertexPath.c_str());
 		auto fragShaderCode = readFile(fragmentPath.c_str());
 
-		VkShaderModule vertShaderModule = createShaderModule(vertShaderCode);
-		VkShaderModule fragShaderModule = createShaderModule(fragShaderCode);
+		vertShaderModule = createShaderModule(vertShaderCode);
+		fragShaderModule = createShaderModule(fragShaderCode);
 
 		VkPipelineShaderStageCreateInfo vertShaderStageInfo = {};
 		vertShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
@@ -70,7 +71,14 @@ public:
 		shaderStages[0] = vertShaderStageInfo;
 		shaderStages[1] = fragShaderStageInfo;
 	}
+	void destroy() {
+		vkDestroyShaderModule(device, vertShaderModule, NULL);
+		vkDestroyShaderModule(device, fragShaderModule, NULL);
+	}
 private:
+	VkShaderModule vertShaderModule;
+	VkShaderModule fragShaderModule;
+
 	static vector<char> readFile(const std::string& filename) { //Copied from renderer, in turn copied from Vulkan Tutorial
 		std::ifstream file(filename, std::ios::ate | std::ios::binary);
 		if (!file.is_open()) {
@@ -90,6 +98,7 @@ private:
 		VkShaderModuleCreateInfo createInfo = {};
 		createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
 		createInfo.codeSize = code.size();
+		createInfo.pNext = NULL;
 		createInfo.pCode = reinterpret_cast<const uint32_t*>(code.data());
 		VkShaderModule shaderModule;
 		VkResult res = vkCreateShaderModule(device, &createInfo, NULL, &shaderModule);
