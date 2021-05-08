@@ -29,7 +29,7 @@ public:
 	void recreateSecondaryBuffers();
 private:
 	string directory;
-	vector<Texture> textures_loaded;
+	static vector<Texture> textures_loaded;
 	Renderer& renderer;
 	//uint& meshCounter;    //used for assigning index numbers to
 	uint& textureCounter;  //meshes and textures

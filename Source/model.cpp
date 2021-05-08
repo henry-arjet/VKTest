@@ -1,14 +1,32 @@
 #include "arjet/model.h"
 #include <arjet/Universal.h>
+#include <arjet/time.h>
 
 void Model::start() {//Called by parent gameObject
 	view = &Universal::viewMatrix; //We need to make sure the camera exists and Universal::viewMatrix exists first;
 }
 
+std::vector<Texture> Model::textures_loaded;
+std::vector<std::thread> textureThreads;
+
+
 Model::Model(GameObject* gameObject, Renderer& r, string const& path, uint& tCount) : renderer(r), textureCounter(tCount) {
 	this->gameObject = gameObject;
 	loadModel(path);
 	r.models.push_back(this);
+	for (int i = 0; i < textureThreads.size(); i++) { //all textures must be loaded before secondary buffers 
+															//or mesh descriptor sets are created
+		try {
+			textureThreads[i].join();
+		}
+		catch (std::exception ex) {
+			cout << "STD::EXCEPTION IN JOIN: " << ex.what() << endl;
+		}
+	}
+	textureThreads.clear();
+	for (int i = 0; i < meshes.size(); i++) {
+		meshes[i].createDescriptorSets();
+	}
 	createSecondaryBuffers();
 }
 void Model::loadModel(string const& path) {
@@ -73,7 +91,7 @@ Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene) {
 		vertex.bit = vector;
 		vertices.push_back(vertex);
 	}
-
+	
 	//process indices
 	for (unsigned int i = 0; i < mesh->mNumFaces; i++) {
 		aiFace face = mesh->mFaces[i];
@@ -98,6 +116,7 @@ Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene) {
 		textures.insert(textures.end(), specularMaps.begin(), specularMaps.end());
 		textures.insert(textures.end(), normalMaps.begin(), normalMaps.end());
 	}
+
 	return Mesh(renderer, vertices, indices, textures, flags, this); 
 }
 
@@ -152,8 +171,7 @@ void TextureFromFile(Renderer& renderer, uint count, const char* path, const str
 		renderer.textureImageViews.resize(size_t(count) + 1);
 		renderer.textureImageMemory.resize(size_t(count) + 1);
 	}
-
-	renderer.createTextureImage(count, filename.c_str());
+	textureThreads.push_back(std::thread(&Renderer::createTextureImage, &renderer, count, strdup(filename.c_str())));
 }
 
 void Model::clean() {

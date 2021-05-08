@@ -55,14 +55,16 @@ public:
 		this->indices = indices;
 		this->textures = textures;
 		this->featureFlags = featureFlags;
-
+		
 		createVertexBuffer();
 		createIndexBuffer();
 		createUniformBuffers();
-		createDescriptorSets();
+		//createDescriptorSets();
 		processUBOConstants();
 
 	}
+
+
 
 	uint getIndicesSize() {
 		if (indicesSize == UINT32_MAX) {
@@ -78,6 +80,11 @@ public:
 	vector<VkDeviceMemory> uniformBuffersMemory;
 	void processUBOConstants();
 
+	void createDescriptorSets(); //I might want to move this over to the model.
+	//The only problem is the shader flags which will be unique to each mesh. I don't want
+	//to tell the shader that every mesh has a normal and spec when only one does.
+	//Could make a model descriptor set and a mesh descriptor set, but I don't think I will
+
 private:
 	uint indicesSize = UINT32_MAX;
 
@@ -90,11 +97,6 @@ private:
 	void createIndexBuffer();
 
 	void createUniformBuffers();
-
-	void createDescriptorSets(); //I might want to move this over to the model.
-	//The only problem is the shader flags which will be unique to each mesh. I don't want
-	//to tell the shader that every mesh has a normal and spec when only one does.
-	//Could make a model descriptor set and a mesh descriptor set, but I don't think I will
 
 
 };

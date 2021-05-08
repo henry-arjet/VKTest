@@ -20,6 +20,7 @@
 #include <optional>
 #include <array>
 #include <string>
+#include <mutex>
 
 #include <stb_image.h>
 
@@ -107,6 +108,8 @@ public:
 
 	vector<ShaderPath> shaderPaths; //sets of shader paths we're going to call
 	vector<Shader> shaders; //the index of the shader in the vector 'shaders' should match the shader's index such that shaders[i].index = i
+	
+	std::mutex threadLock;//only one thread can access the main resources at a time
 
 	//just to make sure we're all on the same page
 	uint currentFrame = 0;

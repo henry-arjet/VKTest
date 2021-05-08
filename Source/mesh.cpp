@@ -14,7 +14,9 @@ void Mesh::createVertexBuffer() {//creates a VK vertex buffer from the vertices 
 	vkUnmapMemory(renderer.device, stagingBufferMemory);
 
 	renderer.createBuffer(bufferSize, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, vertexBuffer, vertexBufferMemory);
+	renderer.threadLock.lock();
 	renderer.copyBuffer(stagingBuffer, vertexBuffer, bufferSize);
+	renderer.threadLock.unlock();
 
 	vkDestroyBuffer(renderer.device, stagingBuffer, NULL);
 	vkFreeMemory(renderer.device, stagingBufferMemory, NULL);
@@ -33,7 +35,9 @@ void Mesh::createIndexBuffer() {
 	vkUnmapMemory(renderer.device, stagingBufferMemory);
 
 	renderer.createBuffer(bufferSize, VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, indexBuffer, indexBufferMemory);
+	renderer.threadLock.lock();
 	renderer.copyBuffer(stagingBuffer, indexBuffer, bufferSize);
+	renderer.threadLock.unlock();
 
 	vkDestroyBuffer(renderer.device, stagingBuffer, NULL);
 	vkFreeMemory(renderer.device, stagingBufferMemory, NULL);

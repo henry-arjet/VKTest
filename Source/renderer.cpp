@@ -4,6 +4,7 @@
 #include <arjet/renderer.h>
 #include <arjet/shader.h>
 #include <arjet/vertex.h>
+#include <arjet/time.h>
 
 
 #define cstr const char*
@@ -619,7 +620,7 @@ void Renderer::endSingleTimeCommands(VkCommandBuffer commandBuffer) {
 	submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 	submitInfo.commandBufferCount = 1;
 	submitInfo.pCommandBuffers = &commandBuffer;
-
+	
 	vkQueueSubmit(graphicsQueue, 1, &submitInfo, NULL);
 	vkQueueWaitIdle(graphicsQueue);
 	vkFreeCommandBuffers(device, commandPool, 1, &commandBuffer);
@@ -739,6 +740,7 @@ void Renderer::createTextureImage(int index, cstr path) {
 	int texWidth, texHeight, texChannels;
 
 	stbi_uc* pixels = stbi_load(path, &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
+
 	VkDeviceSize imageSize = texWidth * texHeight * 4;
 	assert(pixels);
 
@@ -746,15 +748,14 @@ void Renderer::createTextureImage(int index, cstr path) {
 	VkDeviceMemory stagingBufferMemory;
 
 	createBuffer(imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
-
 	void* data;
 	vkMapMemory(device, stagingBufferMemory, 0, imageSize, 0, &data);
 	memcpy(data, pixels, static_cast<size_t>(imageSize));
 	vkUnmapMemory(device, stagingBufferMemory);
 
 	stbi_image_free(pixels);
-
-
+	
+	threadLock.lock(); //stbi_load is what I want to multithread, seing as it takes far longer than anything else
 	createImage(texWidth, texHeight, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, textureImages[index], textureImageMemory[index]);
 
 	//TODO - do this all in single cmdbuffer. Create and use setupCommandBuffer() and flushSetupCommands() helper functions 
@@ -766,6 +767,7 @@ void Renderer::createTextureImage(int index, cstr path) {
 	vkDestroyBuffer(device, stagingBuffer, NULL);
 	vkFreeMemory(device, stagingBufferMemory, NULL);
 	createTextureImageView(index);
+	threadLock.unlock();
 }
 
 void Renderer::copyBufferToImage(VkBuffer buffer, VkImage image, uint width, uint height) {
