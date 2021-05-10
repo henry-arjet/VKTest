@@ -84,6 +84,7 @@ ulong SceneLoader::processObjects(ulong i) { //This method works inside the obje
 			tempCamera->type = "Camera";//might want to move type string assignment to the constructor
 			tempCamera->gameObject = Universal::gameObjects.back().get();
 			Universal::mainCamera = tempCamera.get(); //Just as with light, we don't want to give the Universal class ownership
+			Universal::mainCameraObject = Universal::gameObjects.back().get(); //give the universal a reference to this camera's object
 			Universal::gameObjects.back()->components.push_back(std::move(tempCamera));
 		}
 		i++;

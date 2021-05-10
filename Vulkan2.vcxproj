@@ -235,6 +235,12 @@
   <ItemGroup>
     <Text Include="Scenes\test.txt" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="Shaders\light.frag" />
+    <None Include="Shaders\light.vert" />
+    <None Include="Shaders\shader1.frag" />
+    <None Include="Shaders\shader1.vert" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

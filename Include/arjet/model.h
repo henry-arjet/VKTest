@@ -38,7 +38,8 @@ private:
 	void loadModel(string const& path); //Opens the scene and calls processNode() for the root node
 	void processNode(aiNode* node, const aiScene* scene); //Recursively processes all nodes
 	Mesh processMesh(aiMesh* mesh, const aiScene* scene);
-	vector<Texture> loadMaterialTextures(aiMaterial* mat, aiTextureType type, string typeName);
+	vector<Texture> loadMaterialTextures(aiMaterial* mat, aiTextureType type, string typeName); //depricated
+	Texture loadMaterialTexture(aiMaterial* mat, aiTextureType type, string typeName);
 	void createSecondaryBuffers();
 };
 

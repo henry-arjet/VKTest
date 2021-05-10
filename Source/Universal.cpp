@@ -1,10 +1,13 @@
 #include<arjet/Universal.h>
+#include<arjet/UBO.h>
 
 mat4 Universal::viewMatrix; //reference to the main camera's view matrix
 Renderer Universal::renderer;
 vector<GameObjectPtr> Universal::gameObjects;
 bool Universal::mouseMode = true;
 Camera* Universal::mainCamera;
+
+GameObject* Universal::mainCameraObject;
 
 
 int Universal::run() {
@@ -28,6 +31,7 @@ int Universal::run() {
 		cout << "Starting " << gameObjects[i]->name << endl;
 		gameObjects[i]->start();
 	}
+	cout << offsetof(UniformBufferObject, UniformBufferObject::featureFlags) << "\n";
 	Time::resetDelta(); //just so it doesn't count all the loading and starting in the first deltaTime.
 	mainLoop();
 

@@ -1,8 +1,4 @@
-﻿  main.cpp
-C:\Users\Henry\VKTest\Include\arjet\shader.h(52,12): warning C4101: 'shaderIndex': unreferenced local variable
-C:\Users\Henry\VKTest\Include\arjet\mesh.h(71,1): warning C4267: '=': conversion from 'size_t' to 'uint32_t', possible loss of data
-  The contents of <optional> are available only with C++17 or later.
-  camera_script.cpp
+﻿  camera_script.cpp
 C:\Users\Henry\VKTest\Include\arjet\shader.h(52,12): warning C4101: 'shaderIndex': unreferenced local variable
 C:\Users\Henry\VKTest\Include\arjet\mesh.h(71,1): warning C4267: '=': conversion from 'size_t' to 'uint32_t', possible loss of data
   The contents of <optional> are available only with C++17 or later.
@@ -16,11 +12,11 @@ C:\Users\Henry\VKTest\Scripts\camera_script.cpp(29,40): warning C4244: 'argument
 C:\Users\Henry\VKTest\Include\arjet\shader.h(52,12): warning C4101: 'shaderIndex': unreferenced local variable
 C:\Users\Henry\VKTest\Include\arjet\mesh.h(71,1): warning C4267: '=': conversion from 'size_t' to 'uint32_t', possible loss of data
   The contents of <optional> are available only with C++17 or later.
-  camera.cpp
+  SceneLoader.cpp
 C:\Users\Henry\VKTest\Include\arjet\shader.h(52,12): warning C4101: 'shaderIndex': unreferenced local variable
 C:\Users\Henry\VKTest\Include\arjet\mesh.h(71,1): warning C4267: '=': conversion from 'size_t' to 'uint32_t', possible loss of data
   The contents of <optional> are available only with C++17 or later.
-  GameObject.cpp
+  camera.cpp
 C:\Users\Henry\VKTest\Include\arjet\shader.h(52,12): warning C4101: 'shaderIndex': unreferenced local variable
 C:\Users\Henry\VKTest\Include\arjet\mesh.h(71,1): warning C4267: '=': conversion from 'size_t' to 'uint32_t', possible loss of data
   The contents of <optional> are available only with C++17 or later.
@@ -32,8 +28,8 @@ C:\Users\Henry\VKTest\Include\arjet\mesh.h(71,1): warning C4267: '=': conversion
 C:\Users\Henry\VKTest\Include\arjet\shader.h(52,12): warning C4101: 'shaderIndex': unreferenced local variable
   The contents of <optional> are available only with C++17 or later.
 C:\Users\Henry\VKTest\Include\arjet\mesh.h(71,1): warning C4267: '=': conversion from 'size_t' to 'uint32_t', possible loss of data
-C:\Users\Henry\VKTest\Source\model.cpp(157,92): warning C4267: 'argument': conversion from 'size_t' to 'uint32_t', possible loss of data
-C:\Users\Henry\VKTest\Source\model.cpp(174,88): warning C4996: 'strdup': The POSIX name for this item is deprecated. Instead, use the ISO C and C++ conformant name: _strdup. See online help for details.
+C:\Users\Henry\VKTest\Source\model.cpp(189,92): warning C4267: 'argument': conversion from 'size_t' to 'uint32_t', possible loss of data
+C:\Users\Henry\VKTest\Source\model.cpp(206,88): warning C4996: 'strdup': The POSIX name for this item is deprecated. Instead, use the ISO C and C++ conformant name: _strdup. See online help for details.
   renderer.cpp
 C:\Users\Henry\VKTest\Include\arjet\shader.h(52,12): warning C4101: 'shaderIndex': unreferenced local variable
 C:\Users\Henry\VKTest\Include\arjet\mesh.h(71,1): warning C4267: '=': conversion from 'size_t' to 'uint32_t', possible loss of data
@@ -45,7 +41,11 @@ C:\Users\Henry\VKTest\Source\renderer.cpp(916,28): warning C4267: 'initializing'
 C:\Users\Henry\VKTest\Source\renderer.cpp(948,95): warning C4267: 'argument': conversion from 'size_t' to 'uint32_t', possible loss of data
 C:\Users\Henry\VKTest\Source\renderer.cpp(1017,83): warning C4267: 'argument': conversion from 'size_t' to 'uint32_t', possible loss of data
 C:\Users\Henry\VKTest\Source\renderer.cpp(1025,135): warning C4267: 'argument': conversion from 'size_t' to 'uint32_t', possible loss of data
-  SceneLoader.cpp
+  main.cpp
+C:\Users\Henry\VKTest\Include\arjet\shader.h(52,12): warning C4101: 'shaderIndex': unreferenced local variable
+C:\Users\Henry\VKTest\Include\arjet\mesh.h(71,1): warning C4267: '=': conversion from 'size_t' to 'uint32_t', possible loss of data
+  The contents of <optional> are available only with C++17 or later.
+  GameObject.cpp
 C:\Users\Henry\VKTest\Include\arjet\shader.h(52,12): warning C4101: 'shaderIndex': unreferenced local variable
 C:\Users\Henry\VKTest\Include\arjet\mesh.h(71,1): warning C4267: '=': conversion from 'size_t' to 'uint32_t', possible loss of data
   The contents of <optional> are available only with C++17 or later.
@@ -54,5 +54,5 @@ C:\Users\Henry\VKTest\Include\arjet\shader.h(52,12): warning C4101: 'shaderIndex
 C:\Users\Henry\VKTest\Include\arjet\mesh.h(71,1): warning C4267: '=': conversion from 'size_t' to 'uint32_t', possible loss of data
   The contents of <optional> are available only with C++17 or later.
   Generating Code...
-C:\Users\Henry\VKTest\Source\SceneLoader.cpp(108): warning C4715: 'SceneLoader::generateScript': not all control paths return a value
+C:\Users\Henry\VKTest\Source\SceneLoader.cpp(109): warning C4715: 'SceneLoader::generateScript': not all control paths return a value
   Vulkan2.vcxproj -> C:\Users\Henry\VKTest\x64\Debug2\Vulkan2.exe

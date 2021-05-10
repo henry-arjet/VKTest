@@ -335,7 +335,7 @@ void Renderer::createDescriptorSetLayout() {
 
 
 	bindings[1].binding = 1;
-	bindings[1].descriptorCount = 2;
+	bindings[1].descriptorCount = 3;
 	bindings[1].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
 	bindings[1].stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
 	bindings[1].pImmutableSamplers = NULL;

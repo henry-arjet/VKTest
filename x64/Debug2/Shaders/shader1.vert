@@ -19,9 +19,12 @@ layout(binding = 0) uniform UniformBufferObject {
 	mat4 model;
 	mat4 view;
 	mat4 proj;
-	mat3 normalMatrix;
-	LightInfo infos[4];
+	mat4 normalMatrix;
+	vec3 viewPos;
 	uint featureFlags;
+
+	LightInfo infos[4];
+
 } ubo;
 
 
@@ -34,9 +37,9 @@ layout(location = 3) out mat3 TBN;
 void main(){
 	gl_Position = ubo.proj * ubo.view * ubo.model * vec4(inPosition, 1.0);
 	fragTexCoord = inTexCoord;
-	normal = ubo.normalMatrix * inNormal;
-	vec3 Tan = ubo.normalMatrix * inTan;
-	vec3 Bit = ubo.normalMatrix * inBit;
+	normal = mat3(ubo.normalMatrix) * inNormal;
+	vec3 Tan = mat3(ubo.normalMatrix) * inTan;
+	vec3 Bit = mat3(ubo.normalMatrix) * inBit;
 	fragPos = vec3(ubo.model * vec4(inPosition, 1.0));
 	TBN = mat3(Tan, Bit, normal);
 }

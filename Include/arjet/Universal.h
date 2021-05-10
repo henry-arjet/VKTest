@@ -33,6 +33,7 @@
 #define ulong uint64_t
 #define scuint static_cast<uint32_t>
 #define ARJET_SHADER_FLAG_NORMAL 1 // flag for telling my shaders this mesh uses normal maps
+#define ARJET_SHADER_FLAG_SPECULAR 2 // flag for telling my shaders this mesh uses specular maps
 
 typedef std::unique_ptr<GameObject> GameObjectPtr;
 using glm::mat4;
@@ -49,6 +50,7 @@ public:
 	static vector<GameObjectPtr> gameObjects;
 	static Input input;
 	static Camera* mainCamera;
+	static GameObject* mainCameraObject;
 
 	static bool mouseMode; //keeps track of if I should trap the mouse
 

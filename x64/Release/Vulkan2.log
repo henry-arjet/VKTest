@@ -28,19 +28,8 @@ C:\Users\Henry\VKTest\Include\arjet\mesh.h(71,1): warning C4267: '=': conversion
 C:\Users\Henry\VKTest\Include\arjet\shader.h(52,12): warning C4101: 'shaderIndex': unreferenced local variable
   The contents of <optional> are available only with C++17 or later.
 C:\Users\Henry\VKTest\Include\arjet\mesh.h(71,1): warning C4267: '=': conversion from 'size_t' to 'uint32_t', possible loss of data
-C:\Users\Henry\VKTest\Source\model.cpp(157,92): warning C4267: 'argument': conversion from 'size_t' to 'uint32_t', possible loss of data
-C:\Users\Henry\VKTest\Source\model.cpp(174,88): warning C4996: 'strdup': The POSIX name for this item is deprecated. Instead, use the ISO C and C++ conformant name: _strdup. See online help for details.
-  renderer.cpp
-C:\Users\Henry\VKTest\Include\arjet\shader.h(52,12): warning C4101: 'shaderIndex': unreferenced local variable
-C:\Users\Henry\VKTest\Include\arjet\mesh.h(71,1): warning C4267: '=': conversion from 'size_t' to 'uint32_t', possible loss of data
-  The contents of <optional> are available only with C++17 or later.
-C:\Users\Henry\VKTest\Source\renderer.cpp(678,53): warning C4267: '=': conversion from 'size_t' to 'uint32_t', possible loss of data
-C:\Users\Henry\VKTest\Source\renderer.cpp(695,21): warning C4018: '<': signed/unsigned mismatch
-C:\Users\Henry\VKTest\Source\renderer.cpp(805,32): warning C4267: '=': conversion from 'size_t' to 'uint32_t', possible loss of data
-C:\Users\Henry\VKTest\Source\renderer.cpp(916,28): warning C4267: 'initializing': conversion from 'size_t' to 'uint32_t', possible loss of data
-C:\Users\Henry\VKTest\Source\renderer.cpp(948,95): warning C4267: 'argument': conversion from 'size_t' to 'uint32_t', possible loss of data
-C:\Users\Henry\VKTest\Source\renderer.cpp(1017,83): warning C4267: 'argument': conversion from 'size_t' to 'uint32_t', possible loss of data
-C:\Users\Henry\VKTest\Source\renderer.cpp(1025,135): warning C4267: 'argument': conversion from 'size_t' to 'uint32_t', possible loss of data
+C:\Users\Henry\VKTest\Source\model.cpp(159,92): warning C4267: 'argument': conversion from 'size_t' to 'uint32_t', possible loss of data
+C:\Users\Henry\VKTest\Source\model.cpp(176,88): warning C4996: 'strdup': The POSIX name for this item is deprecated. Instead, use the ISO C and C++ conformant name: _strdup. See online help for details.
   main.cpp
 C:\Users\Henry\VKTest\Include\arjet\shader.h(52,12): warning C4101: 'shaderIndex': unreferenced local variable
 C:\Users\Henry\VKTest\Include\arjet\mesh.h(71,1): warning C4267: '=': conversion from 'size_t' to 'uint32_t', possible loss of data
@@ -54,8 +43,8 @@ C:\Users\Henry\VKTest\Include\arjet\shader.h(52,12): warning C4101: 'shaderIndex
 C:\Users\Henry\VKTest\Include\arjet\mesh.h(71,1): warning C4267: '=': conversion from 'size_t' to 'uint32_t', possible loss of data
   The contents of <optional> are available only with C++17 or later.
   Generating code
-  16 of 2246 functions ( 0.7%) were compiled, the rest were copied from previous compilation.
+  2 of 2246 functions (<0.1%) were compiled, the rest were copied from previous compilation.
     0 functions were new in current compilation
-    15 functions had inline decision re-evaluated but remain unchanged
+    12 functions had inline decision re-evaluated but remain unchanged
   Finished generating code
   Vulkan2.vcxproj -> C:\Users\Henry\VKTest\x64\Release\Vulkan2.exe

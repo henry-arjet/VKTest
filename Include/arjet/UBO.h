@@ -25,7 +25,9 @@ struct UniformBufferObject {
 	alignas(16) mat4 model;
 	alignas(16) mat4 view;
 	alignas(16) mat4 proj;
-	alignas(16) mat3 normalMatrix;
-	alignas(16) LightInfo lights[4]; //have to hard code this. At least for now
+	alignas(16) mat4 normalMatrix; //have to call it a mat4 for aligment
+	alignas(16) vec3 viewPos;
 	alignas(4) uint32_t featureFlags;
+	alignas(16) LightInfo lights[4]; //have to hard code this. At least for now
+
 };

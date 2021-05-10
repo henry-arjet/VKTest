@@ -16,6 +16,9 @@
     <Filter Include="Scripts">
       <UniqueIdentifier>{49ad9f41-2ce2-4646-a5db-17397c2d92b9}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Shaders">
+      <UniqueIdentifier>{34fc3224-3e28-4b59-9af0-254d1bf7918a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -115,5 +118,19 @@
     <Text Include="Scenes\test.txt">
       <Filter>Others</Filter>
     </Text>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Shaders\light.frag">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Shaders\light.vert">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Shaders\shader1.frag">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Shaders\shader1.vert">
+      <Filter>Shaders</Filter>
+    </None>
   </ItemGroup>
 </Project>

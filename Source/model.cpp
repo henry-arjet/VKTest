@@ -56,7 +56,7 @@ Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene) {
 	vector<Vertex>vertices;
 	//vertices.reserve(mesh->mNumVertices);
 	vector<unsigned int> indices;
-	vector<Texture> textures;
+	vector<Texture> textures(3);
 	uint flags = 0; //Stores the shader feature flags
 	for (unsigned int i = 0; i < mesh->mNumVertices; i++) {
 		Vertex vertex;
@@ -107,28 +107,34 @@ Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene) {
 		//cout << "Diff, spec, and norm/height: " << material->GetTextureCount(aiTextureType_DIFFUSE) << " " << material->GetTextureCount(aiTextureType_SPECULAR) << " " << material->GetTextureCount(aiTextureType_HEIGHT) << " " << endl;
 		if (material->GetTextureCount(aiTextureType_HEIGHT) > 0) { //If it has normal map, flag it as such for the shader
 			flags = flags | ARJET_SHADER_FLAG_NORMAL;
+		}if (material->GetTextureCount(aiTextureType_SPECULAR) > 0) { //If it has specular map, flag it as such for the shader
+			flags = flags | ARJET_SHADER_FLAG_SPECULAR;
 		}
-		vector<Texture> diffuseMaps = loadMaterialTextures(material, aiTextureType_DIFFUSE, "texture_diffuse");
+		textures[0] = loadMaterialTexture(material, aiTextureType_DIFFUSE, "texture_diffuse"); //actually only grabbing the first diffuse texture, assuming there will be but one
+		textures[1] = loadMaterialTexture(material, aiTextureType_SPECULAR, "texture_specular");
+		textures[2] = loadMaterialTexture(material, aiTextureType_HEIGHT, "texture_normal");
+
+		/*vector<Texture> diffuseMaps = loadMaterialTextures(material, aiTextureType_DIFFUSE, "texture_diffuse");
 		vector<Texture> specularMaps = loadMaterialTextures(material, aiTextureType_SPECULAR, "texture_specular");
 		vector<Texture> normalMaps = loadMaterialTextures(material, aiTextureType_HEIGHT, "texture_normal");
 
 		textures.insert(textures.end(), diffuseMaps.begin(), diffuseMaps.end());
 		textures.insert(textures.end(), specularMaps.begin(), specularMaps.end());
-		textures.insert(textures.end(), normalMaps.begin(), normalMaps.end());
+		textures.insert(textures.end(), normalMaps.begin(), normalMaps.end());*/
 	}
 
 	return Mesh(renderer, vertices, indices, textures, flags, this); 
 }
 
-vector<Texture> Model::loadMaterialTextures(aiMaterial* mat, aiTextureType type, string typeName) {
-	vector<Texture> textures;
-	for (unsigned int i = 0; i < mat->GetTextureCount(type); i++) {
+Texture Model::loadMaterialTexture(aiMaterial* mat, aiTextureType type, string typeName) {
+	Texture texture;
+	if(mat->GetTextureCount(type)){
 		aiString str;
-		mat->GetTexture(type, i, &str);
+		mat->GetTexture(type, 0, &str);
 		bool skip = false;
 		for (unsigned int j = 0; j < textures_loaded.size(); j++) {
 			if (std::strcmp(textures_loaded[j].path.data(), str.C_Str()) == 0) {
-				textures.push_back(textures_loaded[j]);
+				texture=textures_loaded[j];
 				skip = true;
 				break;
 			}
@@ -136,17 +142,43 @@ vector<Texture> Model::loadMaterialTextures(aiMaterial* mat, aiTextureType type,
 
 		if (!skip) {
 			TextureFromFile(renderer, textureCounter, str.C_Str(), directory); //Adds that texture to the renderer at the index textureCounter
-			Texture texture;
 			texture.texIndex = textureCounter++; // textureCounter++ so it passes it's value, then itterates. So we don't have the first one as 1, the second as 2, etc.
 			//cout << "And storing in index " << texture.texIndex << endl;
 			texture.type = typeName; //Not used right now. Should use it.
 			texture.path = str.C_Str();
-			textures.push_back(texture);
 			textures_loaded.push_back(texture);
 		}
 	}
-	return textures;
+	return texture;
 }
+
+//vector<Texture> Model::loadMaterialTextures(aiMaterial* mat, aiTextureType type, string typeName) {
+//	vector<Texture> textures;
+//	for (unsigned int i = 0; i < mat->GetTextureCount(type); i++) {
+//		aiString str;
+//		mat->GetTexture(type, i, &str);
+//		bool skip = false;
+//		for (unsigned int j = 0; j < textures_loaded.size(); j++) {
+//			if (std::strcmp(textures_loaded[j].path.data(), str.C_Str()) == 0) {
+//				textures.push_back(textures_loaded[j]);
+//				skip = true;
+//				break;
+//			}
+//		}
+//
+//		if (!skip) {
+//			TextureFromFile(renderer, textureCounter, str.C_Str(), directory); //Adds that texture to the renderer at the index textureCounter
+//			Texture texture;
+//			texture.texIndex = textureCounter++; // textureCounter++ so it passes it's value, then itterates. So we don't have the first one as 1, the second as 2, etc.
+//			//cout << "And storing in index " << texture.texIndex << endl;
+//			texture.type = typeName; //Not used right now. Should use it.
+//			texture.path = str.C_Str();
+//			textures.push_back(texture);
+//			textures_loaded.push_back(texture);
+//		}
+//	}
+//	return textures;
+//}
 
 void Model::createSecondaryBuffers() {
 	buffers.resize(renderer.swapchainImages.size());
