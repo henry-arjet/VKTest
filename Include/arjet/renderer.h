@@ -9,6 +9,7 @@
 #include <SDL2/SDL_syswm.h>
 #include <SDL2/SDL_vulkan.h>
 #include <vulkan/vulkan.hpp>
+#include <imgui.h>
 #include <arjet/shader.h>
 #include <arjet/mesh.h>
 
@@ -110,6 +111,8 @@ public:
 	vector<Shader> shaders; //the index of the shader in the vector 'shaders' should match the shader's index such that shaders[i].index = i
 	
 	std::mutex threadLock;//only one thread can access the main resources at a time
+
+	ImDrawData* drawData; //used for imgui
 
 	//just to make sure we're all on the same page
 	uint currentFrame = 0;

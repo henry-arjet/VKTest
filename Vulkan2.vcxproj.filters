@@ -19,6 +19,9 @@
     <Filter Include="Shaders">
       <UniqueIdentifier>{34fc3224-3e28-4b59-9af0-254d1bf7918a}</UniqueIdentifier>
     </Filter>
+    <Filter Include="ImGUI">
+      <UniqueIdentifier>{331d408f-a446-4017-8f70-6aa0b90bfa51}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -59,6 +62,27 @@
     </ClCompile>
     <ClCompile Include="Scripts\test_script1.cpp">
       <Filter>Scripts</Filter>
+    </ClCompile>
+    <ClCompile Include="imgui\backends\imgui_impl_sdl.cpp">
+      <Filter>ImGUI</Filter>
+    </ClCompile>
+    <ClCompile Include="imgui\backends\imgui_impl_vulkan.cpp">
+      <Filter>ImGUI</Filter>
+    </ClCompile>
+    <ClCompile Include="imgui\imgui.cpp">
+      <Filter>ImGUI</Filter>
+    </ClCompile>
+    <ClCompile Include="imgui\imgui_draw.cpp">
+      <Filter>ImGUI</Filter>
+    </ClCompile>
+    <ClCompile Include="imgui\imgui_demo.cpp">
+      <Filter>ImGUI</Filter>
+    </ClCompile>
+    <ClCompile Include="imgui\imgui_tables.cpp">
+      <Filter>ImGUI</Filter>
+    </ClCompile>
+    <ClCompile Include="imgui\imgui_widgets.cpp">
+      <Filter>ImGUI</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -112,6 +136,18 @@
     </ClInclude>
     <ClInclude Include="Scripts\camera_script.h">
       <Filter>Scripts</Filter>
+    </ClInclude>
+    <ClInclude Include="imgui\backends\imgui_impl_sdl.h">
+      <Filter>ImGUI</Filter>
+    </ClInclude>
+    <ClInclude Include="imgui\backends\imgui_impl_vulkan.h">
+      <Filter>ImGUI</Filter>
+    </ClInclude>
+    <ClInclude Include="imgui\imconfig.h">
+      <Filter>ImGUI</Filter>
+    </ClInclude>
+    <ClInclude Include="imgui\imgui.h">
+      <Filter>ImGUI</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

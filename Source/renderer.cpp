@@ -6,6 +6,8 @@
 #include <arjet/vertex.h>
 #include <arjet/time.h>
 
+#include <backends/imgui_impl_vulkan.h>
+
 
 #define cstr const char*
 #define assres assert(res == VK_SUCCESS)
@@ -945,6 +947,9 @@ void Renderer::recreateCommandBuffer() {
 			secondaryBuffers.push_back(models[i]->buffers[cframe]);
 		}
 	}
+
+	ImGui_ImplVulkan_RenderDrawData(drawData, commandBuffers[cframe]);
+	
 	vkCmdExecuteCommands(commandBuffers[cframe], secondaryBuffers.size(), secondaryBuffers.data());
 
 	vkCmdEndRenderPass(commandBuffers[cframe]);
