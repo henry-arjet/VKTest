@@ -37,12 +37,7 @@ int Universal::run() {
 	init_info.Device = renderer.device;
 	init_info.QueueFamily = renderer.queueFamilyIndex;
 	init_info.Queue = renderer.graphicsQueue;
-	
-	VkPipelineCache pipeCache;
-	VkPipelineCacheCreateInfo pipeCacheInfo {VK_STRUCTURE_TYPE_PIPELINE_CACHE_CREATE_INFO, NULL, 0, 0, NULL};
-
-	vkCreatePipelineCache(renderer.device, &pipeCacheInfo, NULL, &pipeCache);
-	init_info.PipelineCache = pipeCache;
+	init_info.PipelineCache = renderer.pipeCache;
 
 	VkDescriptorPoolSize pool_sizes[] =
 	{
@@ -100,11 +95,16 @@ int Universal::run() {
 		cout << "Starting " << gameObjects[i]->name << endl;
 		gameObjects[i]->start();
 	}
-	cout << offsetof(UniformBufferObject, UniformBufferObject::featureFlags) << "\n";
 	Time::resetDelta(); //just so it doesn't count all the loading and starting in the first deltaTime.
+	
 	mainLoop();
 
 	renderer.cleanModels();
+	vkDeviceWaitIdle(renderer.device);
+	ImGui_ImplVulkan_Shutdown();
+	ImGui_ImplSDL2_Shutdown();
+	vkDestroyDescriptorPool(renderer.device, pool, NULL);
+	ImGui::DestroyContext();
 	return 0;
 }
 
@@ -203,8 +203,6 @@ while (stillRunning) {
 			show_another_window = false;
 		ImGui::End();
 	}
-
-	// Rendering
 	
 
 	//Get the new camera position to Universal

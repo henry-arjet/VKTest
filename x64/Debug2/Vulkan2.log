@@ -2,6 +2,6 @@
 C:\Users\Henry\VKTest\Include\arjet\shader.h(52,12): warning C4101: 'shaderIndex': unreferenced local variable
 C:\Users\Henry\VKTest\Include\arjet\mesh.h(71,1): warning C4267: '=': conversion from 'size_t' to 'uint32_t', possible loss of data
   The contents of <optional> are available only with C++17 or later.
-C:\Users\Henry\VKTest\source\Universal.cpp(72,59): warning C4267: '=': conversion from 'size_t' to 'uint32_t', possible loss of data
-C:\Users\Henry\VKTest\source\Universal.cpp(73,56): warning C4267: '=': conversion from 'size_t' to 'uint32_t', possible loss of data
+C:\Users\Henry\VKTest\source\Universal.cpp(67,59): warning C4267: '=': conversion from 'size_t' to 'uint32_t', possible loss of data
+C:\Users\Henry\VKTest\source\Universal.cpp(68,56): warning C4267: '=': conversion from 'size_t' to 'uint32_t', possible loss of data
   Vulkan2.vcxproj -> C:\Users\Henry\VKTest\x64\Debug2\Vulkan2.exe

@@ -273,12 +273,32 @@ void Renderer::createRenderPass() {
 	depthAttachmentRef.attachment = 1;
 	depthAttachmentRef.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 
+	/*VkAttachmentDescription colorAttachmentGui = {}; NOTE: I'm doing a secondary command buffer instead
+	colorAttachmentGui.format = swapchainImageFormat;
+	colorAttachmentGui.samples = VK_SAMPLE_COUNT_1_BIT;
+	colorAttachmentGui.loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
+	colorAttachmentGui.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+	colorAttachmentGui.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+	colorAttachmentGui.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+	colorAttachmentGui.initialLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+	colorAttachmentGui.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
 
-	VkSubpassDescription subpass = {};
-	subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
-	subpass.colorAttachmentCount = 1;
-	subpass.pColorAttachments = &colorAttachmentRef;
-	subpass.pDepthStencilAttachment = &depthAttachmentRef;
+	VkAttachmentReference colorAttachmentRefGui = {};
+	colorAttachmentRefGui.attachment = 2;
+	colorAttachmentRefGui.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+	*/
+
+	VkSubpassDescription subpasses[1] = {};
+	subpasses[0].pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+	subpasses[0].colorAttachmentCount = 1;
+	subpasses[0].pColorAttachments = &colorAttachmentRef;
+	subpasses[0].pDepthStencilAttachment = &depthAttachmentRef;
+	/*
+	subpasses[1].pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS; //ImGui subpass
+	subpasses[1].colorAttachmentCount = 1;
+	subpasses[1].pColorAttachments = &colorAttachmentRef;
+	subpasses[1].pDepthStencilAttachment = &depthAttachmentRef;
+	*/
 
 	VkSubpassDependency dependency = {};
 	dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
@@ -288,13 +308,13 @@ void Renderer::createRenderPass() {
 	dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
 	dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
 
-	std::array<VkAttachmentDescription, 2> attachments = { colorAttachment, depthAttachment };
+	std::array<VkAttachmentDescription, 2> attachments = { colorAttachment, depthAttachment};
 	VkRenderPassCreateInfo renderPassInfo = {};
 	renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
 	renderPassInfo.attachmentCount = static_cast<uint>(attachments.size());
 	renderPassInfo.pAttachments = attachments.data();
 	renderPassInfo.subpassCount = 1;
-	renderPassInfo.pSubpasses = &subpass;
+	renderPassInfo.pSubpasses = subpasses;
 	renderPassInfo.dependencyCount = 1;
 	renderPassInfo.pDependencies = &dependency;
 
@@ -843,6 +863,48 @@ vector<VkCommandBuffer> Renderer::createCommandBuffersModel(vector<Mesh>* modelM
 	return buffers;
 }
 
+void Renderer::allocateCmdBuffersIm(){
+	cmdBuffersIm.resize(swapchainImages.size());
+	VkCommandBufferAllocateInfo cmdInfo = {}; //These are the overall command buffers, remade every frame
+	cmdInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+	cmdInfo.pNext = NULL;
+	cmdInfo.commandPool = commandPool;
+	cmdInfo.level = VK_COMMAND_BUFFER_LEVEL_SECONDARY;
+	cmdInfo.commandBufferCount = swapchainImages.size();
+	res = vkAllocateCommandBuffers(device, &cmdInfo, cmdBuffersIm.data());
+} 
+
+void Renderer::createCmdBuffersIm() { //relies on currentFrame to be accurate
+	size_t s = swapchainImages.size();
+	
+
+	VkCommandBufferInheritanceInfo inherInfo = {};
+	inherInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO;
+	inherInfo.occlusionQueryEnable = 0;
+	inherInfo.queryFlags = 0; //I have no fucking clue what inherited queries are. Or where they're from. But spec says I need this.
+	inherInfo.renderPass = renderPass;
+	//inherInfo.framebuffer //Could do this, might help a bit. Not required TODO |||  wait, how? - me 9 months later
+
+
+	VkCommandBufferBeginInfo beginInfo = {};
+	beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+	beginInfo.flags = VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT | VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT;
+	//Set it up for being called from the main render pass, and called multiple times
+	//I shouldn't need simultaneous as I'm creating two draw calls, but that's ineficcient
+	beginInfo.pInheritanceInfo = &inherInfo;
+	res = vkBeginCommandBuffer(cmdBuffersIm[currentFrame], &beginInfo);
+	assres;
+	vkCmdBindPipeline(cmdBuffersIm[currentFrame], VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipelines[0]); //HARDCODED TO BASE SHADER for now
+
+	ImGui_ImplVulkan_RenderDrawData(drawData, cmdBuffersIm[currentFrame]);
+
+
+	res = vkEndCommandBuffer(cmdBuffersIm[currentFrame]);
+	assres;
+	
+}
+
+
 void Renderer::drawFrame() {
 	vkWaitForFences(device, 1, &inFlightFences[currentFrame], VK_TRUE, UINT64_MAX); //could introduce a bit of lag if vsynced. Could fix it my multithreading
 
@@ -918,6 +980,8 @@ void Renderer::recreateCommandBuffer() {
 	uint size = shaders.size(); //how many shaders (and thus pipelines) we're working with. Deprecated
 	uint cframe = currentFrame;
 
+	createCmdBuffersIm();//lets new cmd buffer for the new draw data
+
 	VkCommandBufferBeginInfo beginInfo = {};
 
 	beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
@@ -947,9 +1011,9 @@ void Renderer::recreateCommandBuffer() {
 			secondaryBuffers.push_back(models[i]->buffers[cframe]);
 		}
 	}
-
-	ImGui_ImplVulkan_RenderDrawData(drawData, commandBuffers[cframe]);
 	
+	secondaryBuffers.push_back(cmdBuffersIm[cframe]);
+
 	vkCmdExecuteCommands(commandBuffers[cframe], secondaryBuffers.size(), secondaryBuffers.data());
 
 	vkCmdEndRenderPass(commandBuffers[cframe]);
@@ -1005,6 +1069,7 @@ void Renderer::cleanup(){
 	}
 
 	vkDestroyCommandPool(device, commandPool, NULL);
+	vkDestroyPipelineCache(device, pipeCache, NULL);
 	vkDestroyDevice(device, NULL);
 
 	vkDestroySurfaceKHR(inst, surface, NULL);
@@ -1066,4 +1131,11 @@ Renderer::~Renderer() {
 	}
 
 	cleanup();
+}
+
+void Renderer::createPipelineCache() {
+	VkPipelineCache pipeCache;
+	VkPipelineCacheCreateInfo pipeCacheInfo{ VK_STRUCTURE_TYPE_PIPELINE_CACHE_CREATE_INFO, NULL, 0, 0, NULL };
+
+	vkCreatePipelineCache(device, &pipeCacheInfo, NULL, &pipeCache);
 }

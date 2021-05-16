@@ -113,7 +113,9 @@ public:
 	std::mutex threadLock;//only one thread can access the main resources at a time
 
 	ImDrawData* drawData; //used for imgui
-
+	vector<VkCommandBuffer> cmdBuffersIm; //encapsulates the draw data
+	VkPipelineCache pipeCache; //only used for imgui right now
+										  
 	//just to make sure we're all on the same page
 	uint currentFrame = 0;
 	Renderer() {}
@@ -138,12 +140,16 @@ public:
 		createDepthResources();
 		createFramebuffers();
 		createTextureSampler();
-
+		allocateCmdBuffersIm();
 		createSyncObjects();
 		createMasterCmdBuffers();
 
 	}
 	void createMasterCmdBuffers(); //creates the reusable master command buffers. One per frame
+
+	void allocateCmdBuffersIm();
+
+	void createCmdBuffersIm();
 
 	void buildShaders(); //Turns shaderPaths into Shader objects. Assigns index by the index in shaderPaths
 
@@ -159,6 +165,8 @@ public:
 	VkCommandBuffer beginSingleTimeCommands(); //creates and starts recording a command optimized for runing once
 
 	void endSingleTimeCommands(VkCommandBuffer commandBuffer); //Ends the the given buffer
+
+	void createPipelineCache();
 
 	void copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size); //copies the contents of a buffer to another buffer
 
@@ -176,7 +184,7 @@ public:
 	void createTextureImageView(int index); //fills textureImageViews[index] with createImageView() SRGB call
 
 	void createTextureSampler(); //creates our basic sampler
-
+	
 	VkFormat findSupportedFormat(const vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features); //
 
 	bool hasStencilComponent(VkFormat format) { //finds if format has sencil component
@@ -204,6 +212,8 @@ public:
 	void createDescriptorSetLayout(); //only using one descriptor set that contains a UBO, a texture, and a normal map
 
 	void createPipelines(); //one pipeline for each shader
+
+	void createImGuiPipeline();
 	
 	void createFramebuffers();
 
